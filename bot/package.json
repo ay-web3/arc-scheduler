@@ -1,0 +1,13 @@
+{
+  "name": "bot",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "executor.js",
+  "scripts": {
+    "start": "node executor.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "ethers": "^6.10.0"
+  }
+}

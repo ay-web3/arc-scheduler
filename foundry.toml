@@ -1,0 +1,5 @@
+[rpc_endpoints]
+arc = "${ARC_RPC_URL}"
+
+[profile.default]
+chain_id = 5042002

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Arc Scheduler</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/frontend/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/frontend/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/frontend/favicon-16x16.png">
+<link rel="manifest" href="/frontend/site.webmanifest">
+
+
+  <!-- Ethers -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">
+  <img src="/frontend/favicon-32x32.png" alt="Arc Scheduler" class="logo-icon">
+  Arc Scheduler
+</div>
+
+
+  <div class="nav">
+    <div id="botHealth" class="badge neutral">Executor: Checking</div>
+
+    <button id="connectBtn" class="nav-btn" onclick="connectWallet()">
+      Connect Wallet
+    </button>
+
+    <div class="wallet-wrapper">
+      <div id="walletPill" class="wallet-pill hidden" onclick="toggleWalletMenu(event)">
+        <span class="wallet-dot"></span>
+        <span id="walletAddress"></span>
+      </div>
+
+      <div id="walletMenu" class="wallet-menu hidden">
+        <button onclick="copyWalletAddress(event)">📋 Copy address</button>
+        <button onclick="openExplorer()">🔍 View on Explorer</button>
+        <div class="divider"></div>
+        <button class="danger" onclick="disconnectWallet()">🔌 Disconnect</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section class="dashboard grid-4">
+    <div class="card stat-card">
+      <div class="label">Total Payments</div>
+      <div id="statTotal" class="value">—</div>
+    </div>
+    <div class="card stat-card">
+      <div class="label">Pending</div>
+      <div id="statPending" class="value">—</div>
+    </div>
+    <div class="card stat-card">
+      <div class="label">Executed</div>
+      <div id="statExecuted" class="value">—</div>
+    </div>
+    <div class="card stat-card">
+      <div class="label">Executor Fee</div>
+      <div id="statFee" class="value">—</div>
+    </div>
+  </section>
+
+  <!-- ACTIONS -->
+  <section class="grid-2">
+
+    <div class="card">
+      <h2>Send Now</h2>
+      <input id="sendRecipient" placeholder="Recipient address" />
+      <input id="sendAmount" placeholder="Amount (USDC)" />
+      <button class="btn primary" onclick="sendNow()">Send USDC</button>
+      <div id="sendStatus" class="status"></div>
+    </div>
+
+    <div class="card">
+      <h2>Schedule Payment</h2>
+      <input id="schedRecipient" placeholder="Recipient address" />
+      <input id="schedAmount" placeholder="Amount (USDC)" />
+      <input id="schedTime" type="datetime-local" />
+      <button class="btn primary" onclick="schedulePayment()">Schedule</button>
+      <div id="schedStatus" class="status"></div>
+    </div>
+
+  </section>
+
+  <!-- MANUAL EXECUTION -->
+  <section class="card subtle">
+    <h2>🛠 Manual Execution (Backup)</h2>
+    <p class="muted">Only use this if the executor is offline.</p>
+
+    <input id="manualExecId" placeholder="Payment ID" />
+    <button id="manualExecBtn" class="btn secondary">
+      Execute Payment
+    </button>
+
+    <div id="manualExecStatus" class="status"></div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="card">
+    <h2>Scheduled Payments</h2>
+    <table class="payments-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Recipient</th>
+          <th>Amount</th>
+          <th>Execute Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="paymentTableBody">
+        <tr>
+          <td colspan="6" class="empty">Connect wallet to load payments</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Powered by Arc Testnet</span>
+    <span>•</span>
+
+    <a
+      href="https://testnet.arcscan.app/address/0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6"
+      target="_blank"
+    >
+      Contract
+    </a>
+
+    <span>•</span>
+    <span>Auto Executor Enabled</span>
+
+    <span>•</span>
+    <span>Testnet • Beta</span>
+
+    <span>•</span>
+
+    <a
+      href="https://github.com/ay-web3/arc-usdc-scheduler"
+      target="_blank"
+      class="github-link"
+    >
+      GitHub
+    </a>
+
+    <span>•</span>
+    <span class="muted">Built by ay-web3</span>
+  </div>
+</footer>
+
+
+
+<script src="app.js"></script>
+</body>
+</html>

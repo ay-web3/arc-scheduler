@@ -1,0 +1,419 @@
+/* --- Elite High-End UI Concept --- */
+:root {
+  --canvas: #09090b;       /* Deep matte black */
+  --panel: #121215;        /* Slightly lighter panel */
+  --accent: #ffffff;       /* Pure white for focus */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-bright: rgba(255, 255, 255, 0.15);
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+  --success: #10b981;
+  --font-main: 'Inter', -apple-system, system-ui, sans-serif;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: default;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout Structure --- */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+/* --- Navigation / Topbar --- */
+.topbar {
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: rgba(9, 9, 11, 0.8);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* --- Dashboard Stats (The Grid) --- */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px; /* Creates thin border lines between cards */
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stat-card {
+  background: var(--panel);
+  padding: 1.5rem;
+}
+
+.stat-card .label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card .value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* --- Action Section --- */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* --- Ultra-Professional Buttons (Transparent/Ghost) --- */
+button,
+.btn,
+.nav-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-bright);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+}
+
+button:hover,
+.btn:hover {
+  background: var(--accent);
+  color: var(--canvas);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.nav-btn {
+  width: auto;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--canvas);
+}
+
+.nav-btn:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+/* --- Modern Form Inputs --- */
+input {
+  width: 100%;
+  background: #1a1a1e;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+  transition: border-color 0.2s;
+  cursor: text;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--text-secondary);
+}
+
+/* --- Refined Table --- */
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.payments-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.05em;
+}
+
+.payments-table td {
+  padding: 1.25rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* --- Status & Indicators --- */
+.badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+.badge.online {
+  border-color: var(--success);
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.status {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.subtle {
+  background: transparent;
+  border: 1px dashed var(--border);
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* --- Footer --- */
+.footer {
+  text-align: center;
+  padding: 4rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* ================= STATUS COLORS ================= */
+.success {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.warning {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.error {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* ================= BUTTON VARIANTS ================= */
+.btn.small {
+  width: auto;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.7rem;
+  margin-right: 0.5rem;
+}
+
+/* ================= INTERACTION FIX ================= */
+button,
+.btn,
+.nav-btn {
+  cursor: pointer;
+}
+
+/* ================= COPY BUTTON FEEDBACK ================= */
+.btn.copied {
+  background: var(--success);
+  color: var(--canvas);
+  border-color: var(--success);
+}
+
+/* ================= RESPONSIVE SAFETY ================= */
+@media (max-width: 900px) {
+  .grid-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================= WALLET CONNECTED PILL ================= */
+.wallet-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-bright);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.wallet-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+}
+
+.hidden {
+  display: none;
+}
+
+/* ================= WALLET DROPDOWN ================= */
+
+.wallet-wrapper {
+  position: relative;
+}
+
+.wallet-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.4rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  z-index: 200;
+}
+
+.wallet-menu button {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.wallet-menu button:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.wallet-menu .danger {
+  color: #ef4444;
+}
+
+.wallet-menu .divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.3rem 0.4rem;
+}
+
+/* ================= TX LINKS ================= */
+.status a {
+  color: var(--text-primary); /* white */
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.status a:hover {
+  color: var(--accent); /* subtle hover (still white theme) */
+  text-decoration: underline;
+}
+
+.status a {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.status a:hover {
+  text-decoration: underline;
+}
+
+/* ================= FIX SUBTLE CARD INTERACTION ================= */
+.subtle button {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.btn.copied {
+  background: var(--success);
+  color: var(--canvas);
+  border-color: var(--success);
+  cursor: default;
+}
+
