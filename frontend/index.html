@@ -11,11 +11,10 @@
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css" />
 
-<link rel="apple-touch-icon" sizes="180x180" href="/frontend/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/frontend/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/frontend/favicon-16x16.png">
-<link rel="manifest" href="/frontend/site.webmanifest">
-
+  <link rel="apple-touch-icon" sizes="180x180" href="/frontend/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/frontend/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/frontend/favicon-16x16.png">
+  <link rel="manifest" href="/frontend/site.webmanifest">
 
   <!-- Ethers -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
@@ -24,10 +23,9 @@
 
 <header class="topbar">
   <div class="logo">
-  <img src="/frontend/favicon-32x32.png" alt="Arc Scheduler" class="logo-icon">
-  Arc Scheduler
-</div>
-
+    <img src="/frontend/favicon-32x32.png" alt="Arc Scheduler" class="logo-icon">
+    Arc Scheduler
+  </div>
 
   <div class="nav">
     <div id="botHealth" class="badge neutral">Executor: Checking</div>
@@ -76,7 +74,6 @@
 
   <!-- ACTIONS -->
   <section class="grid-2">
-
     <div class="card">
       <h2>Send Now</h2>
       <input id="sendRecipient" placeholder="Recipient address" />
@@ -93,11 +90,12 @@
       <button class="btn primary" onclick="schedulePayment()">Schedule</button>
       <div id="schedStatus" class="status"></div>
     </div>
-
   </section>
 
-  <!-- MANUAL EXECUTION -->
-  <section class="card subtle">
+  <!-- ADVANCED (HIDDEN MANUAL EXECUTION) -->
+  <details class="card subtle">
+    <summary><strong>Advanced</strong></summary>
+
     <h2>🛠 Manual Execution (Backup)</h2>
     <p class="muted">Only use this if the executor is offline.</p>
 
@@ -107,11 +105,20 @@
     </button>
 
     <div id="manualExecStatus" class="status"></div>
-  </section>
+  </details>
 
   <!-- HISTORY -->
   <section class="card">
     <h2>Scheduled Payments</h2>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="executed">Executed</button>
+      <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+    </div>
+
     <table class="payments-table">
       <thead>
         <tr>
@@ -165,8 +172,6 @@
     <span class="muted">Built by ay-web3</span>
   </div>
 </footer>
-
-
 
 <script src="app.js"></script>
 </body>

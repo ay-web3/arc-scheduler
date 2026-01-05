@@ -417,3 +417,155 @@ button,
   cursor: default;
 }
 
+/* ================= FILTER TABS ================= */
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 18px 0;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  width: fit-content;
+}
+
+.filter-btn {
+  border: none;
+  background: transparent;
+  color: #a1a1aa;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+}
+
+.filter-btn.active {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.9),
+    rgba(79, 70, 229, 0.9)
+  );
+  color: #ffffff;
+  box-shadow:
+    0 4px 12px rgba(79, 70, 229, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Optional subtle click feedback */
+.filter-btn:active {
+  transform: scale(0.96);
+}
+
+.payments-table tbody {
+  transition: opacity 0.15s ease;
+}
+
+
+/* ================= MOBILE RESPONSIVENESS ================= */
+
+@media (max-width: 768px) {
+
+  /* ---- Layout ---- */
+  .main {
+    padding: 12px;
+  }
+
+  .grid-2,
+  .grid-4 {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  /* ---- Header ---- */
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo {
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  /* ---- Wallet ---- */
+  .wallet-pill {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---- Filters ---- */
+  .filters {
+    width: 100%;
+    overflow-x: auto;
+    padding: 6px;
+  }
+
+  .filter-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ---- Table ---- */
+  .payments-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .payments-table th,
+  .payments-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  /* ---- Actions buttons ---- */
+  .btn.small {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* ---- Advanced section ---- */
+  details.card.subtle summary {
+    font-size: 14px;
+  }
+
+  /* ---- Footer ---- */
+  .footer-inner {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-card .value {
+    font-size: 18px;
+  }
+
+  .stat-card .label {
+    font-size: 12px;
+  }
+}

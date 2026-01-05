@@ -3,6 +3,7 @@ const CHAIN_ID = 5042002;
 const DECIMALS = 6;
 
 let provider, signer, scheduler, userAddress;
+let currentFilter = "all"; 
 
 const abi = [
   "function paymentCount() view returns (uint256)",
@@ -10,44 +11,54 @@ const abi = [
   "function sendNow(address,uint256)",
   "function schedulePayment(address,uint256,uint256)",
   "function executePayment(uint256)",
+  "function cancelPayment(uint256)",
   "function feeBps() view returns (uint256)",
   "event Executed(uint256 indexed id)"
 ];
 
 // ================= WALLET =================
 async function connectWallet() {
-  if (!window.ethereum) return alert("MetaMask required");
+  if (!window.ethereum) {
+    alert("No Web3 wallet detected. Please install a wallet like MetaMask, Rabby, or Coinbase Wallet.");
+    return;
+  }
 
-  provider = new ethers.BrowserProvider(window.ethereum);
+  // Handle multiple injected wallets (e.g. MetaMask + Rabby)
+  const providerSource = window.ethereum.providers?.length
+    ? window.ethereum.providers[0]
+    : window.ethereum;
+
+  provider = new ethers.BrowserProvider(providerSource);
+
   await provider.send("eth_requestAccounts", []);
   signer = await provider.getSigner();
   userAddress = await signer.getAddress();
 
   const net = await provider.getNetwork();
-  if (Number(net.chainId) !== CHAIN_ID)
-    return alert("Switch to Arc Testnet");
+  if (Number(net.chainId) !== CHAIN_ID) {
+    alert("Please switch to Arc Testnet");
+    return;
+  }
 
   scheduler = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
-  // ---------- FIX: LOAD EXECUTOR FEE ----------
   try {
-    const rawFee = await scheduler.feeBps(); // basis points
+    const rawFee = await scheduler.feeBps();
     const percent = (Number(rawFee) / 100).toFixed(2);
-    document.getElementById("statFee").innerText = `${percent}%`;
-  } catch (err) {
-    console.error("Failed to load executor fee:", err);
-    document.getElementById("statFee").innerText = "—";
+    statFee.innerText = `${percent}%`;
+  } catch {
+    statFee.innerText = "—";
   }
-  // ------------------------------------------
 
-  document.getElementById("connectBtn").classList.add("hidden");
-  document.getElementById("walletAddress").innerText =
+  connectBtn.classList.add("hidden");
+  walletAddress.innerText =
     userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
-  document.getElementById("walletPill").classList.remove("hidden");
+  walletPill.classList.remove("hidden");
 
   loadPaymentHistory();
   subscribe();
 }
+
 
 // ================= ACTIONS =================
 async function sendNow() {
@@ -109,6 +120,35 @@ async function manualExecute() {
   }
 }
 
+// ================= CANCEL =================
+async function cancelPayment(id) {
+  try {
+    const ok = confirm(
+      "Cancel this payment?\n\nFunds will be refunded immediately."
+    );
+    if (!ok) return;
+
+    const tx = await scheduler.cancelPayment(id);
+    await tx.wait();
+    loadPaymentHistory();
+  } catch (e) {
+    alert("❌ " + (e.reason || e.message));
+  }
+}
+
+// ================= FILTER HANDLING (NEW) =================
+document.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("filter-btn")) return;
+
+  document.querySelectorAll(".filter-btn").forEach(btn =>
+    btn.classList.remove("active")
+  );
+
+  e.target.classList.add("active");
+  currentFilter = e.target.dataset.filter;
+  loadPaymentHistory();
+});
+
 // ================= HISTORY =================
 async function loadPaymentHistory() {
   const body = paymentTableBody;
@@ -121,8 +161,20 @@ async function loadPaymentHistory() {
     const p = await scheduler.payments(i);
     if (p[0].toLowerCase() !== userAddress.toLowerCase()) continue;
 
+    const isExecuted = p[4];
+    const isCancelled = p[5];
+
+    // ✅ FILTER LOGIC
+    if (
+      (currentFilter === "pending" && (isExecuted || isCancelled)) ||
+      (currentFilter === "executed" && !isExecuted) ||
+      (currentFilter === "cancelled" && !isCancelled)
+    ) continue;
+
     shown++;
-    p[4] ? executed++ : pending++;
+
+    if (isExecuted) executed++;
+    else if (!isCancelled) pending++;
 
     body.innerHTML += `
       <tr>
@@ -130,24 +182,28 @@ async function loadPaymentHistory() {
         <td>${p[1].slice(0,6)}…</td>
         <td>${ethers.formatUnits(p[2], DECIMALS)} USDC</td>
         <td>${new Date(Number(p[3])*1000).toLocaleString()}</td>
-        <td class="${p[4] ? "success" : "warning"}">
-          ${p[4] ? "Executed" : "Scheduled"}
+        <td class="${isExecuted ? "success" : isCancelled ? "danger" : "warning"}">
+          ${isExecuted ? "Executed" : isCancelled ? "Cancelled" : "Scheduled"}
         </td>
         <td>
-  <button
-    class="btn small copy-btn"
-    onclick="copyPaymentId(${i}, this)"
-  >
-    📋
-  </button>
+          <button
+            class="btn small copy-btn"
+            onclick="copyPaymentId(${i}, this)"
+          >📋</button>
 
-  ${
-    p[4]
-      ? "—"
-      : `<button class="btn small exec-btn" data-id="${i}">Execute</button>`
-  }
-</td>
-
+          ${
+            isExecuted || isCancelled
+              ? "—"
+              : `
+                <button class="btn small exec-btn" data-id="${i}">
+                  Execute
+                </button>
+                <button class="btn small danger" onclick="cancelPayment(${i})">
+                  Cancel
+                </button>
+              `
+          }
+        </td>
       </tr>
     `;
   }
@@ -163,16 +219,10 @@ document.addEventListener("click", (e) => {
   const pill = walletPill;
 
   if (!menu || menu.classList.contains("hidden")) return;
+  if (menu.contains(e.target) || pill.contains(e.target)) return;
 
-  // If click is INSIDE menu or pill → do nothing
-  if (menu.contains(e.target) || pill.contains(e.target)) {
-    return;
-  }
-
-  // Otherwise → close menu
   menu.classList.add("hidden");
 });
-
 
 // ================= WALLET MENU =================
 function toggleWalletMenu(e) {
@@ -202,6 +252,7 @@ function disconnectWallet() {
 function subscribe() {
   scheduler.on("Executed", loadPaymentHistory);
 }
+
 // ================= COPY PAYMENT ID =================
 function copyPaymentId(id, btn) {
   navigator.clipboard.writeText(String(id));
@@ -219,7 +270,6 @@ function copyPaymentId(id, btn) {
     btn.disabled = false;
   }, 1500);
 }
-
 
 // ================= EXECUTOR HEALTH =================
 async function checkExecutorHealth() {
@@ -240,6 +290,7 @@ window.connectWallet = connectWallet;
 window.sendNow = sendNow;
 window.schedulePayment = schedulePayment;
 window.manualExecute = manualExecute;
+window.cancelPayment = cancelPayment;
 
 document.addEventListener("DOMContentLoaded", () => {
   const manualBtn = document.getElementById("manualExecBtn");
