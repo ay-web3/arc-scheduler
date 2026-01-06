@@ -133,24 +133,24 @@ Before sending or scheduling:
 
 This prevents:
 
-Failed transfers
+- Failed transfers
 
-Unexpected reverts
+- Unexpected reverts
 
-Poor UX
+- Poor UX
 #
 
 **🚨 Error Handling**
 
 Raw blockchain errors are translated into human-readable messages, e.g.:
 
-“Please enter a valid amount”
+- “Please enter a valid amount”
 
-“Approval required before sending”
+- “Approval required before sending”
 
-“Transaction cancelled by wallet”
+- “Transaction cancelled by wallet”
 
-“Insufficient balance”
+- “Insufficient balance”
 #
 
 **🧪 Network Configuration (Arc Testnet)**
@@ -165,23 +165,23 @@ Raw blockchain errors are translated into human-readable messages, e.g.:
 **🧭 Roadmap**
 **v1 (Current)**
 
-One-time scheduled payments
+- One-time scheduled payments
 
-Manual + automated execution
+- Manual + automated execution
 
-Sender & recipient views
+- Sender & recipient views
 
 **v2 (Planned)**
 
-Recurring payments
+- Recurring payments
 
-Multi-executor support
+- Multi-executor support
 
-Fee tiers (manual vs auto execution)
+- Fee tiers (manual vs auto execution)
 
-Recipient opt-in visibility
+- Recipient opt-in visibility
 
-Mainnet deployment
+- Mainnet deployment
 #
 
 **🆚 Why Not Chainlink / Gelato?**
