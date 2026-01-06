@@ -121,49 +121,70 @@ async function ensureAllowance(amount) {
   await tx.wait();
 }
 
-const amount = ethers.parseUnits(sendAmount.value, DECIMALS);
-await ensureAllowance(amount);
-
-const tx = await scheduler.sendNow(sendRecipient.value, amount);
-
 
 // ================= ACTIONS =================
 async function sendNow() {
   const status = sendStatus;
   try {
+    status.innerText = "⏳ Approving…";
+
+    const amount = ethers.parseUnits(sendAmount.value, DECIMALS);
+    await ensureAllowance(amount);
+
     status.innerText = "⏳ Sending…";
     const tx = await scheduler.sendNow(
       sendRecipient.value,
-      ethers.parseUnits(sendAmount.value, DECIMALS)
+      amount
     );
+
     status.innerHTML = `⏳ Sent<br/>
-      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View on ArcScan</a>`;
+      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">
+        View on ArcScan
+      </a>`;
+
     await tx.wait();
+
     status.innerHTML = `✅ Sent<br/>
-      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View on ArcScan</a>`;
+      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">
+        View on ArcScan
+      </a>`;
   } catch (e) {
     status.innerText = "❌ " + (e.reason || e.message);
   }
 }
 
+
 async function schedulePayment() {
   const status = schedStatus;
   try {
+    status.innerText = "⏳ Approving…";
+
+    const amount = ethers.parseUnits(schedAmount.value, DECIMALS);
+    await ensureAllowance(amount);
+
     status.innerText = "⏳ Scheduling…";
-    const executeAt = Math.floor(new Date(schedTime.value).getTime() / 1000);
+    const executeAt = Math.floor(
+      new Date(schedTime.value).getTime() / 1000
+    );
+
     const tx = await scheduler.schedulePayment(
       schedRecipient.value,
-      ethers.parseUnits(schedAmount.value, DECIMALS),
+      amount,
       executeAt
     );
+
     status.innerHTML = `⏳ Scheduled<br/>
-      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View on ArcScan</a>`;
+      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">
+        View on ArcScan
+      </a>`;
+
     await tx.wait();
     loadPaymentHistory();
   } catch (e) {
     status.innerText = "❌ " + (e.reason || e.message);
   }
 }
+
 
 async function manualExecute() {
   const status = manualExecStatus;
