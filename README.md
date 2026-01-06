@@ -140,19 +140,6 @@ This prevents:
 - Poor UX
 #
 
-**🚨 Error Handling**
-
-Raw blockchain errors are translated into human-readable messages, e.g.:
-
-- “Please enter a valid amount”
-
-- “Approval required before sending”
-
-- “Transaction cancelled by wallet”
-
-- “Insufficient balance”
-#
-
 **🧪 Network Configuration (Arc Testnet)**
 
     Network Name: Arc Testnet
