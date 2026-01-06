@@ -37,13 +37,25 @@ async function connectWallet() {
   userAddress = await signer.getAddress();
 
   // ✅ REPLACED PART (Arc-safe)
-  const chainIdHex = await provider.send("eth_chainId", []);
-  const chainId = parseInt(chainIdHex, 16);
+  // ✅ REPLACED PART (Arc-safe & Robust)
+const network = await provider.getNetwork();
+const chainId = Number(network.chainId); // Ensures numeric comparison
 
-  if (![5042002, 167005].includes(chainId)) {
-    alert("Please switch to Arc Testnet");
+// Arc Testnet Chain ID = 5042002 (0x4CE9B2)
+if (chainId !== 5042002) {
+  try {
+    // Prompt wallet to switch to Arc Testnet
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: "0x4CE9B2" }],
+    });
+  } catch (switchError) {
+    // Fallback if Arc is not added in wallet
+    alert("Please switch your wallet to the Arc Testnet.");
     return;
   }
+}
+
 
   scheduler = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
