@@ -31,9 +31,9 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const CHAIN_ID = 5042002;
 const NETWORK = { name: "arc-testnet", chainId: CHAIN_ID };
 
-const CHECK_INTERVAL_MS = 15_000;
+const CHECK_INTERVAL_MS = 40_000;
 const EXECUTION_COOLDOWN_MS = 3_000;
-const RATE_LIMIT_BACKOFF_MS = 10_000;
+const RATE_LIMIT_BACKOFF_MS = 40_000;
 const RPC_SWITCH_COOLDOWN_MS = 30_000;
 // =========================================
 

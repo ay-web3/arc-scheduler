@@ -430,7 +430,7 @@ function copyPaymentId(id, btn) {
 // ================= EXECUTOR HEALTH =================
 async function checkExecutorHealth() {
   try {
-    const r = await fetch("http://localhost:3001/health");
+    const r = await fetch("https://arc-scheduler.onrender.com/health");
     botHealth.innerText = r.ok ? "Executor: Online" : "Executor: Offline";
     botHealth.className = r.ok ? "badge online" : "badge error";
   } catch {
