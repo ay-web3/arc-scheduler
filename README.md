@@ -119,7 +119,7 @@ Live demo (Vercel):
 
 - Copy payment IDs
 
-View executor status
+- View executor status
 #
 **🔐 ERC-20 Allowance Flow**
 
