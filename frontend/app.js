@@ -25,9 +25,8 @@ async function connectWallet() {
     return;
   }
   
-  const providerSource = window.ethereum.providers?.length
-    ? window.ethereum.providers[0]
-    : window.ethereum;
+  const providerSource = window.ethereum;
+
 
   provider = new ethers.BrowserProvider(providerSource);
 
