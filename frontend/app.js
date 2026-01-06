@@ -127,6 +127,11 @@ async function ensureAllowance(amount) {
 // ================= ACTIONS =================
 async function sendNow() {
   const status = sendStatus;
+  if (!sendRecipient.value || !sendAmount.value) {
+    status.innerText = "❌ Please fill all fields";
+    return;
+  }
+  
   try {
     status.innerText = "⏳ Approving…";
 
@@ -150,14 +155,20 @@ async function sendNow() {
       <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">
         View on ArcScan
       </a>`;
-  } catch (e) {
-    status.innerText = "❌ " + (e.reason || e.message);
+  loadPaymentHistory();
+  } catch (err) {
+    status.innerText = "❌ " + humanizeError(err);
   }
 }
 
 
 async function schedulePayment() {
   const status = schedStatus;
+  if (!schedRecipient.value || !schedAmount.value || !schedTime.value) {
+    status.innerText = "❌ Please fill all fields";
+    return;
+  }
+
   try {
     status.innerText = "⏳ Approving…";
 
@@ -182,8 +193,8 @@ async function schedulePayment() {
 
     await tx.wait();
     loadPaymentHistory();
-  } catch (e) {
-    status.innerText = "❌ " + (e.reason || e.message);
+  } catch (err) {
+    status.innerText = "❌ " + humanizeError(err);
   }
 }
 
@@ -448,3 +459,31 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+function humanizeError(err) {
+  if (!err) return "Something went wrong";
+
+  const msg = err.reason || err.message || String(err);
+
+  if (msg.includes("invalid FixedNumber") || msg.includes("INVALID_ARGUMENT")) {
+    return "Please enter a valid amount";
+  }
+
+  if (msg.includes("insufficient funds")) {
+    return "Insufficient balance";
+  }
+
+  if (msg.includes("exceeds allowance")) {
+    return "Approval required before sending";
+  }
+
+  if (msg.includes("user rejected")) {
+    return "Transaction cancelled by wallet";
+  }
+
+  if (msg.includes("execution reverted")) {
+    return "Transaction reverted by contract";
+  }
+
+  return "Transaction failed. Please try again.";
+}
