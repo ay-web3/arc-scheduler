@@ -129,46 +129,61 @@ const tx = await scheduler.sendNow(sendRecipient.value, amount);
 
 // ================= ACTIONS =================
 async function sendNow() {
+  const status = sendStatus;
   try {
-    sendStatus.innerText = "⏳ Approving…";
-
-    const amount = ethers.parseUnits(sendAmount.value, DECIMALS);
-    await ensureAllowance(amount);
-
-    sendStatus.innerText = "⏳ Sending…";
-    const tx = await scheduler.sendNow(sendRecipient.value, amount);
+    status.innerText = "⏳ Sending…";
+    const tx = await scheduler.sendNow(
+      sendRecipient.value,
+      ethers.parseUnits(sendAmount.value, DECIMALS)
+    );
+    status.innerHTML = `⏳ Sent<br/>
+      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View on ArcScan</a>`;
     await tx.wait();
-
-    sendStatus.innerHTML = `✅ Sent<br/>
-      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View</a>`;
+    status.innerHTML = `✅ Sent<br/>
+      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View on ArcScan</a>`;
   } catch (e) {
-    sendStatus.innerText = "❌ " + (e.reason || e.message);
+    status.innerText = "❌ " + (e.reason || e.message);
   }
 }
 
 async function schedulePayment() {
+  const status = schedStatus;
   try {
-    schedStatus.innerText = "⏳ Approving…";
-
-    const amount = ethers.parseUnits(schedAmount.value, DECIMALS);
-    await ensureAllowance(amount);
-
+    status.innerText = "⏳ Scheduling…";
     const executeAt = Math.floor(new Date(schedTime.value).getTime() / 1000);
-
-    schedStatus.innerText = "⏳ Scheduling…";
     const tx = await scheduler.schedulePayment(
       schedRecipient.value,
-      amount,
+      ethers.parseUnits(schedAmount.value, DECIMALS),
       executeAt
     );
+    status.innerHTML = `⏳ Scheduled<br/>
+      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View on ArcScan</a>`;
     await tx.wait();
-
-    schedStatus.innerHTML = `✅ Scheduled<br/>
-      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View</a>`;
-
     loadPaymentHistory();
   } catch (e) {
-    schedStatus.innerText = "❌ " + (e.reason || e.message);
+    status.innerText = "❌ " + (e.reason || e.message);
+  }
+}
+
+async function manualExecute() {
+  const status = manualExecStatus;
+  try {
+    const id = Number(manualExecId.value);
+    if (isNaN(id)) {
+      status.innerText = "❌ Invalid payment ID";
+      return;
+    }
+
+    status.innerText = "⏳ Executing…";
+    const tx = await scheduler.executePayment(id);
+    status.innerHTML = `⏳ Executing<br/>
+      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View on ArcScan</a>`;
+    await tx.wait();
+    status.innerHTML = `✅ Executed<br/>
+      <a href="https://testnet.arcscan.app/tx/${tx.hash}" target="_blank">View on ArcScan</a>`;
+    loadPaymentHistory();
+  } catch (e) {
+    status.innerText = "❌ " + (e.reason || e.message);
   }
 }
 
