@@ -1,4 +1,17 @@
-console.log("🔥 ARC DEBUG: frontend/app.js LOADED");
+// ================= DOM ELEMENTS =================
+const statTotal = document.getElementById("statTotal");
+const statPending = document.getElementById("statPending");
+const statExecuted = document.getElementById("statExecuted");
+const statFee = document.getElementById("statFee");
+
+const connectBtn = document.querySelector(".nav-btn");
+
+const walletPill = document.getElementById("walletStatus");
+const walletAddress = document.getElementById("walletStatus"); // or replace with a more specific ID if needed
+
+const paymentTableBody = document.getElementById("paymentTableBody");
+
+
 
 const CONTRACT_ADDRESS = "0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6";
 const CHAIN_ID = 5042002;
