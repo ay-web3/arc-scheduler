@@ -1,3 +1,5 @@
+let isRenderingHistory = false;
+
 const erc20Abi = [
   "function allowance(address owner, address spender) view returns (uint256)",
   "function approve(address spender, uint256 amount) returns (bool)"
@@ -279,85 +281,82 @@ document.addEventListener("click", (e) => {
 
 // ================= HISTORY =================
 async function loadPaymentHistory() {
+  if (isRenderingHistory) return;
+  isRenderingHistory = true;
+
   const body = paymentTableBody;
   body.innerHTML = "";
 
-  const total = Number(await scheduler.paymentCount());
-  let pending = 0, executed = 0, shown = 0;
+  try {
+    const total = Number(await scheduler.paymentCount());
+    let pending = 0, executed = 0, shown = 0;
 
-  for (let i = 0; i < total; i++) {
-    const p = await scheduler.payments(i);
-    const sender = p[0].toLowerCase();
-const recipient = p[1].toLowerCase();
+    for (let i = 0; i < total; i++) {
+      const p = await scheduler.payments(i);
 
-const isOutgoing = sender === userAddress.toLowerCase();
-const isIncoming = recipient === userAddress.toLowerCase();
+      const sender = p[0].toLowerCase();
+      const recipient = p[1].toLowerCase();
 
-if (
-  (currentView === "outgoing" && !isOutgoing) ||
-  (currentView === "incoming" && !isIncoming)
-) continue;
+      const isOutgoing = sender === userAddress.toLowerCase();
+      const isIncoming = recipient === userAddress.toLowerCase();
 
+      if (
+        (currentView === "outgoing" && !isOutgoing) ||
+        (currentView === "incoming" && !isIncoming)
+      ) continue;
 
-    const isExecuted = p[4];
-    const isCancelled = p[5];
+      const isExecuted = p[4];
+      const isCancelled = p[5];
 
-    // ✅ FILTER LOGIC
-    if (
-      (currentFilter === "pending" && (isExecuted || isCancelled)) ||
-      (currentFilter === "executed" && !isExecuted) ||
-      (currentFilter === "cancelled" && !isCancelled)
-    ) continue;
+      if (
+        (currentFilter === "pending" && (isExecuted || isCancelled)) ||
+        (currentFilter === "executed" && !isExecuted) ||
+        (currentFilter === "cancelled" && !isCancelled)
+      ) continue;
 
-    shown++;
+      shown++;
+      if (isExecuted) executed++;
+      else if (!isCancelled) pending++;
 
-    if (isExecuted) executed++;
-    else if (!isCancelled) pending++;
+      body.insertAdjacentHTML(
+        "beforeend",
+        `
+        <tr>
+          <td>#${i}</td>
+          <td>${(currentView === "incoming" ? p[0] : p[1]).slice(0,6)}…</td>
+          <td>${ethers.formatUnits(p[2], DECIMALS)} USDC</td>
+          <td>${new Date(Number(p[3]) * 1000).toLocaleString()}</td>
+          <td class="${isExecuted ? "success" : isCancelled ? "danger" : "warning"}">
+            ${isExecuted ? "Executed" : isCancelled ? "Cancelled" : "Scheduled"}
+          </td>
+          <td>
+            <button class="btn small copy-btn" onclick="copyPaymentId(${i}, this)">📋</button>
+            ${
+              isExecuted || isCancelled
+                ? "—"
+                : `
+                  <button class="btn small exec-btn" data-id="${i}">Execute</button>
+                  ${
+                    currentView === "outgoing"
+                      ? `<button class="btn small danger" onclick="cancelPayment(${i})">Cancel</button>`
+                      : ""
+                  }
+                `
+            }
+          </td>
+        </tr>
+        `
+      );
+    }
 
-    body.innerHTML += `
-      <tr>
-        <td>#${i}</td>
-        <td>
-  ${(currentView === "incoming" ? p[0] : p[1]).slice(0,6)}…
-</td>
-
-        <td>${ethers.formatUnits(p[2], DECIMALS)} USDC</td>
-        <td>${new Date(Number(p[3])*1000).toLocaleString()}</td>
-        <td class="${isExecuted ? "success" : isCancelled ? "danger" : "warning"}">
-          ${isExecuted ? "Executed" : isCancelled ? "Cancelled" : "Scheduled"}
-        </td>
-        <td>
-          <button
-            class="btn small copy-btn"
-            onclick="copyPaymentId(${i}, this)"
-          >📋</button>
-
-          ${
-  isExecuted || isCancelled
-    ? "—"
-    : `
-      <button class="btn small exec-btn" data-id="${i}">
-        Execute
-      </button>
-      ${
-        currentView === "outgoing"
-          ? `<button class="btn small danger" onclick="cancelPayment(${i})">
-               Cancel
-             </button>`
-          : ""
-      }
-    `
-}
-
-        </td>
-      </tr>
-    `;
+    statTotal.innerText = shown;
+    statPending.innerText = pending;
+    statExecuted.innerText = executed;
+  } finally {
+    isRenderingHistory = false;
   }
-
-  statTotal.innerText = shown;
-  statPending.innerText = pending;
-  statExecuted.innerText = executed;
 }
+
 
 // ================= EVENT DELEGATION =================
 document.addEventListener("click", (e) => {
