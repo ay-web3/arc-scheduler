@@ -2,55 +2,57 @@
 
 A decentralized USDC payment scheduler built on Arc Testnet, enabling users to send, schedule, and execute payments trustlessly — with optional automated execution and manual fallbacks.
 
-✨ Features
+**✨ Features**
 
-🔹 Core
+**🔹 Core**
 
-Send USDC instantly
+- **Send USDC instantly**
 
-Schedule USDC payments for future execution
+- **Schedule USDC payments for future execution**
+  
+- **On-chain escrow – funds are locked in the contract**
 
-On-chain escrow – funds are locked in the contract
+- **Cancelable schedules (refunds sender if not executed)**
+  
+- **Executor fee (basis points) for sustainable automation**
 
-Cancelable schedules (refunds sender if not executed)
+**🔹 Execution**
 
-Executor fee (basis points) for sustainable automation
+- **Auto Executor (bot) – executes payments when due**
 
-🔹 Execution
+- **Manual execution fallback – sender or recipient can execute**
 
-Auto Executor (bot) – executes payments when due
+- **Recipient visibility – recipients can see incoming scheduled payments**
 
-Manual execution fallback – sender or recipient can execute
+- **Incoming / Outgoing views in the UI**
+  
+**🔹 UX & Safety**
 
-Recipient visibility – recipients can see incoming scheduled payments
+- **Wallet-based authentication (MetaMask, Rabby, etc.)**
+  
+- **Network auto-switch to Arc Testnet**
 
-Incoming / Outgoing views in the UI
+- **ERC-20 allowance checks + approvals**
 
-🔹 UX & Safety
+- **Human-readable error messages**
 
-Wallet-based authentication (MetaMask, Rabby, etc.)
+- **Explorer links for every transaction**
+#
+   
+**🧠 Why Arc?**
 
-Network auto-switch to Arc Testnet
+Arc is a **stablecoin-native blockchain** optimized for payments:
 
-ERC-20 allowance checks + approvals
+- USDC used as gas
 
-Human-readable error messages
+- Deterministic finality
 
-Explorer links for every transaction
-
-🧠 Why Arc?
-
-Arc is a stablecoin-native blockchain optimized for payments:
-
-USDC used as gas
-
-Deterministic finality
-
-Designed for real-world financial workflows
+- Designed for real-world financial workflows
 
 This project showcases stablecoin scheduling as a primitive, similar to payroll, subscriptions, and recurring transfers.
+#
 
-🏗️ Architecture
+**🏗️ Architecture**
 
     Frontend (HTML/CSS/JS)
 
@@ -70,30 +72,31 @@ This project showcases stablecoin scheduling as a primitive, similar to payroll,
     Auto Executor (optional bot)
 
 
-**Frontend:** Vanilla JS + Ethers v6
+- **Frontend:** Vanilla JS + Ethers v6
 
-**Smart Contract:** Solidity
+- **Smart Contract:** Solidity
 
-**Token:** USDC (Arc Testnet)
+- **Token:** USDC (Arc Testnet)
 
-**Explorer:** ArcScan
+- **Explorer:** ArcScan
 
 # 📦 Smart Contract
 
-**Contract Address:**
-0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6
+- **Contract Address:**
 
-**Key Functions:**
+        0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6
 
-    sendNow()
+- **Key Functions:**
+
+        sendNow()
     
-    schedulePayment()
+        schedulePayment()
 
-    executePayment()
+        executePayment()
 
-    cancelPayment()
+        cancelPayment()
 
-    feeBps()
+        feeBps()
 #
 
 **🖥️ Frontend**
@@ -102,19 +105,19 @@ Live demo (Vercel):
 
 👉 https://arc-usdc-scheduler.vercel.app
 
-Features:
+**Features:**
 
-Connect wallet
+- Connect wallet
 
-Send & schedule USDC
+- Send & schedule USDC
 
-View scheduled payments
+- View scheduled payments
 
-Toggle Incoming / Outgoing
+- Toggle Incoming / Outgoing
 
-Execute or cancel payments
+- Execute or cancel payments
 
-Copy payment IDs
+- Copy payment IDs
 
 View executor status
 #
@@ -202,3 +205,14 @@ PRs and feedback are welcome.
 2. Create a feature branch
 
 3. Submit a pull request
+#
+
+**📜 License**
+
+MIT
+#
+
+**👤 Author**
+
+Built by **ay-web3**
+GitHub: https://github.com/ay-web3
