@@ -10,6 +10,7 @@ let currentView = "outgoing";
 const connectBtn = document.getElementById("connectBtn");
 const walletPill = document.getElementById("walletPill");
 const walletAddressEl = document.getElementById("walletAddress");
+const statFee = document.getElementById("statFee");
 
 
 const abi = [
@@ -73,6 +74,16 @@ async function connectWallet() {
   // 3. Setup contract + state
   userAddress = await signer.getAddress();
   scheduler = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+  // Load executor fee
+try {
+  const rawFee = await scheduler.feeBps(); // basis points
+  const percent = (Number(rawFee) / 100).toFixed(2);
+  statFee.innerText = `${percent}%`;
+} catch (err) {
+  console.error("Failed to load executor fee:", err);
+  statFee.innerText = "—";
+}
+
 
   // 4. Update UI
   walletPill.classList.remove("hidden");
