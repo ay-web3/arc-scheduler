@@ -1,17 +1,3 @@
-// ================= DOM ELEMENTS =================
-const statTotal = document.getElementById("statTotal");
-const statPending = document.getElementById("statPending");
-const statExecuted = document.getElementById("statExecuted");
-const statFee = document.getElementById("statFee");
-
-const connectBtn = document.querySelector(".nav-btn");
-
-const walletPill = document.getElementById("walletStatus");
-const walletAddress = document.getElementById("walletStatus"); // or replace with a more specific ID if needed
-
-const paymentTableBody = document.getElementById("paymentTableBody");
-
-
 
 const CONTRACT_ADDRESS = "0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6";
 const CHAIN_ID = 5042002;
@@ -35,60 +21,63 @@ const abi = [
 
 // ================= WALLET =================
 async function connectWallet() {
-  if (!window.ethereum) {
-    alert("No Web3 wallet detected. Please install a wallet like MetaMask, Rabby, or Coinbase Wallet.");
-    return;
-  }
-  
-  const providerSource = window.ethereum;
+  const provider = new ethers.BrowserProvider(window.ethereum);
 
-
-  provider = new ethers.BrowserProvider(providerSource);
-
+  // 1. Request wallet access
   await provider.send("eth_requestAccounts", []);
-  signer = await provider.getSigner();
-  userAddress = await signer.getAddress();
+  const signer = await provider.getSigner();
 
-  // ✅ REPLACED PART (Arc-safe)
-  // ✅ REPLACED PART (Arc-safe & Robust)
-const network = await provider.getNetwork();
-const chainId = Number(network.chainId); // Ensures numeric comparison
+  // 2. Robust Chain Check (Ethers v6 uses BigInt)
+  const network = await provider.getNetwork();
+  const chainId = Number(network.chainId); // force Number
 
-// Arc Testnet Chain ID = 5042002 (0x4CE9B2)
-if (chainId !== 5042002) {
-  try {
-    // Prompt wallet to switch to Arc Testnet
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x4CE9B2" }],
-    });
-  } catch (switchError) {
-    // Fallback if Arc is not added in wallet
-    alert("Please switch your wallet to the Arc Testnet.");
-    return;
+  const ARC_CHAIN_ID = 5042002;
+
+  if (chainId !== ARC_CHAIN_ID) {
+    try {
+      // Attempt network switch
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: ethers.toBeHex(ARC_CHAIN_ID) }],
+      });
+    } catch (switchError) {
+      // Chain not added to wallet
+      if (switchError.code === 4902) {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: ethers.toBeHex(ARC_CHAIN_ID),
+              chainName: "Arc Testnet",
+              nativeCurrency: {
+                name: "USDC",
+                symbol: "USDC",
+                decimals: 6,
+              },
+              rpcUrls: ["https://rpc.testnet.arc.network"],
+              blockExplorerUrls: ["https://testnet.arcscan.app/"],
+            },
+          ],
+        });
+      } else {
+        alert("Failed to switch to Arc Testnet");
+        return;
+      }
+    }
   }
-}
 
-
+  // 3. Setup contract + state
+  userAddress = await signer.getAddress();
   scheduler = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
-  // rest of your function stays exactly the same…
-  try {
-    const rawFee = await scheduler.feeBps();
-    const percent = (Number(rawFee) / 100).toFixed(2);
-    statFee.innerText = `${percent}%`;
-  } catch {
-    statFee.innerText = "—";
-  }
-
-  connectBtn.classList.add("hidden");
-  walletAddress.innerText =
-    userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
-  walletPill.classList.remove("hidden");
+  // 4. Update UI
+  document.getElementById(
+    "walletStatus"
+  ).innerText = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
 
   loadPaymentHistory();
-  subscribe();
 }
+
 
 
 // ================= ACTIONS =================
