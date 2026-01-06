@@ -136,6 +136,31 @@ async function cancelPayment(id) {
   }
 }
 
+// ================= EXECUTE BUTTON HANDLER (FIX) =================
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".exec-btn");
+  if (!btn) return;
+
+  const id = Number(btn.dataset.id);
+  if (isNaN(id)) return;
+
+  try {
+    btn.disabled = true;
+    btn.innerText = "⏳";
+
+    const tx = await scheduler.executePayment(id);
+    await tx.wait();
+
+    loadPaymentHistory();
+  } catch (err) {
+    alert("❌ " + (err.reason || err.message));
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Execute";
+  }
+});
+
+
 // ================= FILTER HANDLING (NEW) =================
 document.addEventListener("click", (e) => {
   if (!e.target.classList.contains("filter-btn")) return;
