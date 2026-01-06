@@ -57,8 +57,6 @@ if (chainId !== 5042002) {
 }
 
 
-  scheduler = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
-
   // rest of your function stays exactly the same…
   try {
     const rawFee = await scheduler.feeBps();
