@@ -1,3 +1,5 @@
+console.log("🔥 ARC DEBUG: frontend/app.js LOADED");
+
 const CONTRACT_ADDRESS = "0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6";
 const CHAIN_ID = 5042002;
 const DECIMALS = 6;
