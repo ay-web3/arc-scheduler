@@ -69,6 +69,50 @@ This project showcases stablecoin scheduling as a primitive, similar to payroll,
     Auto Executor (optional bot)
 
 
-Frontend: Vanilla JS + Ethers v6
+**Frontend:** Vanilla JS + Ethers v6
 
-Smart Contract: Solidity
+**Smart Contract:** Solidity
+
+**Token:** USDC (Arc Testnet)
+
+**Explorer:** ArcScan
+
+# 📦 Smart Contract
+
+**Contract Address:**
+0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6
+
+**Key Functions:**
+
+    sendNow()
+    
+    schedulePayment()
+
+    executePayment()
+
+    cancelPayment()
+
+    feeBps()
+#
+**🖥️ Frontend**
+
+Live demo (Vercel):
+
+👉 https://arc-usdc-scheduler.vercel.app
+
+Features:
+
+Connect wallet
+
+Send & schedule USDC
+
+View scheduled payments
+
+Toggle Incoming / Outgoing
+
+Execute or cancel payments
+
+Copy payment IDs
+
+View executor status
+#
