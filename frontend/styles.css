@@ -569,3 +569,55 @@ button,
     font-size: 12px;
   }
 }
+
+.view-toggle {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 16px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.view-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: #9ca3af; /* muted gray */
+  transition: all 0.2s ease;
+}
+
+.view-btn.active {
+  background: linear-gradient(
+    135deg,
+    #3b82f6,
+    #6366f1
+  );
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+}
+
+.view-btn:hover {
+  color: #ffffff;
+}
+
+.view-btn:not(.active):hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 640px) {
+  .view-toggle {
+    width: 100%;
+  }
+
+  .view-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+  }
+}

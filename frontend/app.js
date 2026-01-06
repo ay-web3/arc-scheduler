@@ -3,7 +3,9 @@ const CHAIN_ID = 5042002;
 const DECIMALS = 6;
 
 let provider, signer, scheduler, userAddress;
-let currentFilter = "all"; 
+let currentFilter = "all";
+let currentView = "outgoing";
+
 
 const abi = [
   "function paymentCount() view returns (uint256)",
@@ -174,6 +176,21 @@ document.addEventListener("click", (e) => {
   loadPaymentHistory();
 });
 
+// ================= VIEW TOGGLE =================
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".view-btn");
+  if (!btn) return;
+
+  document.querySelectorAll(".view-btn").forEach(b =>
+    b.classList.remove("active")
+  );
+
+  btn.classList.add("active");
+  currentView = btn.dataset.view;
+
+  loadPaymentHistory();
+});
+
 // ================= HISTORY =================
 async function loadPaymentHistory() {
   const body = paymentTableBody;
@@ -184,7 +201,17 @@ async function loadPaymentHistory() {
 
   for (let i = 0; i < total; i++) {
     const p = await scheduler.payments(i);
-    if (p[0].toLowerCase() !== userAddress.toLowerCase()) continue;
+    const sender = p[0].toLowerCase();
+const recipient = p[1].toLowerCase();
+
+const isOutgoing = sender === userAddress.toLowerCase();
+const isIncoming = recipient === userAddress.toLowerCase();
+
+if (
+  (currentView === "outgoing" && !isOutgoing) ||
+  (currentView === "incoming" && !isIncoming)
+) continue;
+
 
     const isExecuted = p[4];
     const isCancelled = p[5];
@@ -204,7 +231,10 @@ async function loadPaymentHistory() {
     body.innerHTML += `
       <tr>
         <td>#${i}</td>
-        <td>${p[1].slice(0,6)}…</td>
+        <td>
+  ${(currentView === "incoming" ? p[0] : p[1]).slice(0,6)}…
+</td>
+
         <td>${ethers.formatUnits(p[2], DECIMALS)} USDC</td>
         <td>${new Date(Number(p[3])*1000).toLocaleString()}</td>
         <td class="${isExecuted ? "success" : isCancelled ? "danger" : "warning"}">
@@ -217,17 +247,22 @@ async function loadPaymentHistory() {
           >📋</button>
 
           ${
-            isExecuted || isCancelled
-              ? "—"
-              : `
-                <button class="btn small exec-btn" data-id="${i}">
-                  Execute
-                </button>
-                <button class="btn small danger" onclick="cancelPayment(${i})">
-                  Cancel
-                </button>
-              `
-          }
+  isExecuted || isCancelled
+    ? "—"
+    : `
+      <button class="btn small exec-btn" data-id="${i}">
+        Execute
+      </button>
+      ${
+        currentView === "outgoing"
+          ? `<button class="btn small danger" onclick="cancelPayment(${i})">
+               Cancel
+             </button>`
+          : ""
+      }
+    `
+}
+
         </td>
       </tr>
     `;
