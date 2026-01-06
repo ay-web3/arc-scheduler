@@ -7,6 +7,10 @@ let provider, signer, scheduler, userAddress;
 let currentFilter = "all";
 let currentView = "outgoing";
 
+const connectBtn = document.getElementById("connectBtn");
+const walletPill = document.getElementById("walletPill");
+const walletAddressEl = document.getElementById("walletAddress");
+
 
 const abi = [
   "function paymentCount() view returns (uint256)",
@@ -21,11 +25,11 @@ const abi = [
 
 // ================= WALLET =================
 async function connectWallet() {
-  const provider = new ethers.BrowserProvider(window.ethereum);
+  provider = new ethers.BrowserProvider(window.ethereum);
 
-  // 1. Request wallet access
   await provider.send("eth_requestAccounts", []);
-  const signer = await provider.getSigner();
+  signer = await provider.getSigner();
+
 
   // 2. Robust Chain Check (Ethers v6 uses BigInt)
   const network = await provider.getNetwork();
@@ -71,9 +75,12 @@ async function connectWallet() {
   scheduler = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
   // 4. Update UI
-  document.getElementById(
-    "walletStatus"
-  ).innerText = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+  walletPill.classList.remove("hidden");
+walletAddressEl.innerText =
+  `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+connectBtn.classList.add("hidden");
+
+
 
   loadPaymentHistory();
 }
