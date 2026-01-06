@@ -2,7 +2,7 @@
 
 A decentralized USDC payment scheduler built on Arc Testnet, enabling users to send, schedule, and execute payments trustlessly — with optional automated execution and manual fallbacks.
 
-**✨ Features**
+# **✨ Features**
 
 **🔹 Core**
 
@@ -103,7 +103,7 @@ This project showcases stablecoin scheduling as a primitive, similar to payroll,
 
 Live demo (Vercel):
 
-👉 https://arc-usdc-scheduler.vercel.app
+👉 https://arc-scheduler.vercel.app/
 
 **Features:**
 
