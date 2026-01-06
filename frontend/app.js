@@ -24,8 +24,7 @@ async function connectWallet() {
     alert("No Web3 wallet detected. Please install a wallet like MetaMask, Rabby, or Coinbase Wallet.");
     return;
   }
-
-  // Handle multiple injected wallets (e.g. MetaMask + Rabby)
+  
   const providerSource = window.ethereum.providers?.length
     ? window.ethereum.providers[0]
     : window.ethereum;
@@ -36,14 +35,18 @@ async function connectWallet() {
   signer = await provider.getSigner();
   userAddress = await signer.getAddress();
 
-  const net = await provider.getNetwork();
-  if (Number(net.chainId) !== CHAIN_ID) {
+  // ✅ REPLACED PART (Arc-safe)
+  const chainIdHex = await provider.send("eth_chainId", []);
+  const chainId = parseInt(chainIdHex, 16);
+
+  if (![5042002, 167005].includes(chainId)) {
     alert("Please switch to Arc Testnet");
     return;
   }
 
   scheduler = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
+  // rest of your function stays exactly the same…
   try {
     const rawFee = await scheduler.feeBps();
     const percent = (Number(rawFee) / 100).toFixed(2);
