@@ -1,66 +1,74 @@
-## Foundry
+# Arc USDC Scheduler ⏱️💸
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A decentralized USDC payment scheduler built on Arc Testnet, enabling users to send, schedule, and execute payments trustlessly — with optional automated execution and manual fallbacks.
 
-Foundry consists of:
+✨ Features
+🔹 Core
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+Send USDC instantly
 
-## Documentation
+Schedule USDC payments for future execution
 
-https://book.getfoundry.sh/
+On-chain escrow – funds are locked in the contract
 
-## Usage
+Cancelable schedules (refunds sender if not executed)
 
-### Build
+Executor fee (basis points) for sustainable automation
 
-```shell
-$ forge build
-```
+🔹 Execution
 
-### Test
+Auto Executor (bot) – executes payments when due
 
-```shell
-$ forge test
-```
+Manual execution fallback – sender or recipient can execute
 
-### Format
+Recipient visibility – recipients can see incoming scheduled payments
 
-```shell
-$ forge fmt
-```
+Incoming / Outgoing views in the UI
 
-### Gas Snapshots
+🔹 UX & Safety
 
-```shell
-$ forge snapshot
-```
+Wallet-based authentication (MetaMask, Rabby, etc.)
 
-### Anvil
+Network auto-switch to Arc Testnet
 
-```shell
-$ anvil
-```
+ERC-20 allowance checks + approvals
 
-### Deploy
+Human-readable error messages
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+Explorer links for every transaction
 
-### Cast
+🧠 Why Arc?
 
-```shell
-$ cast <subcommand>
-```
+Arc is a stablecoin-native blockchain optimized for payments:
 
-### Help
+USDC used as gas
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Deterministic finality
+
+Designed for real-world financial workflows
+
+This project showcases stablecoin scheduling as a primitive, similar to payroll, subscriptions, and recurring transfers.
+
+🏗️ Architecture
+
+    Frontend (HTML/CSS/JS)
+
+     |
+   
+     |  ethers.js
+   
+     |
+   
+    Smart Contract (Arc Testnet)
+
+     |
+   
+     |  ERC-20 USDC
+   
+     |
+    Auto Executor (optional bot)
+
+
+Frontend: Vanilla JS + Ethers v6
+
+Smart Contract: Solidity
