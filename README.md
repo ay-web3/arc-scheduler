@@ -3,6 +3,7 @@
 A decentralized USDC payment scheduler built on Arc Testnet, enabling users to send, schedule, and execute payments trustlessly — with optional automated execution and manual fallbacks.
 
 ✨ Features
+
 🔹 Core
 
 Send USDC instantly
@@ -94,6 +95,7 @@ This project showcases stablecoin scheduling as a primitive, similar to payroll,
 
     feeBps()
 #
+
 **🖥️ Frontend**
 
 Live demo (Vercel):
@@ -116,3 +118,87 @@ Copy payment IDs
 
 View executor status
 #
+**🔐 ERC-20 Allowance Flow**
+
+Before sending or scheduling:
+
+1. App checks USDC allowance
+
+2. Prompts approval if needed
+
+3. Executes transaction safely
+
+This prevents:
+
+Failed transfers
+
+Unexpected reverts
+
+Poor UX
+#
+
+**🚨 Error Handling**
+
+Raw blockchain errors are translated into human-readable messages, e.g.:
+
+“Please enter a valid amount”
+
+“Approval required before sending”
+
+“Transaction cancelled by wallet”
+
+“Insufficient balance”
+#
+
+**🧪 Network Configuration (Arc Testnet)**
+
+    Network Name: Arc Testnet
+    RPC URL: https://rpc.testnet.arc.network
+    Chain ID: 5042002
+    Currency Symbol: USDC
+    Explorer: https://testnet.arcscan.app
+#
+
+**🧭 Roadmap**
+**v1 (Current)**
+
+One-time scheduled payments
+
+Manual + automated execution
+
+Sender & recipient views
+
+**v2 (Planned)**
+
+Recurring payments
+
+Multi-executor support
+
+Fee tiers (manual vs auto execution)
+
+Recipient opt-in visibility
+
+Mainnet deployment
+#
+
+**🆚 Why Not Chainlink / Gelato?**
+| Feature             | Arc Scheduler | Chainlink / Gelato |
+| ------------------- | ------------- | ------------------ |
+| Stablecoin-native   | ✅             | ❌                  |
+| USDC gas            | ✅             | ❌                  |
+| Recipient execution | ✅             | ❌                  |
+| Cancelable escrow   | ✅             | ❌                  |
+| Lightweight & open  | ✅             | ❌                  |
+
+This project is simpler, cheaper, and purpose-built for USDC payments.
+#
+
+**🤝 Contributing**
+
+PRs and feedback are welcome.
+
+1. Fork the repo
+
+2. Create a feature branch
+
+3. Submit a pull request
