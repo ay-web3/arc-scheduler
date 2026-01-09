@@ -2,8 +2,11 @@
   "name": "notifier",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "start": "node telegram-listener.js"
+  },
   "dependencies": {
-    "ethers": "^6.0.0",
+    "ethers": "^6.16.0",
     "dotenv": "^16.0.0",
     "node-fetch": "^3.3.2"
   }

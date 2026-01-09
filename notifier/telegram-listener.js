@@ -11,11 +11,17 @@ const USERS_FILE = "./users.json";
 const PAYMENTS_FILE = "./payments.json";
 const STATE_FILE = "./state.json";
 
+/* ================= CONFIG ================= */
+
+const MAX_BLOCK_RANGE = 2000; // IMPORTANT: prevents RPC log-limit errors
+
 /* ================= HELPERS ================= */
 
 function loadJSON(path, fallback = {}) {
   if (!fs.existsSync(path)) return fallback;
-  return JSON.parse(fs.readFileSync(path, "utf8"));
+  const raw = fs.readFileSync(path, "utf8");
+  if (!raw.trim()) return fallback;
+  return JSON.parse(raw);
 }
 
 function saveJSON(path, data) {
@@ -82,77 +88,91 @@ async function pollEvents() {
 
     if (currentBlock <= lastBlock) return;
 
-    const events = await contract.queryFilter(
-      "*",
-      lastBlock + 1,
-      currentBlock
-    );
-
     const users = loadJSON(USERS_FILE);
     const payments = loadJSON(PAYMENTS_FILE);
 
-    for (const e of events) {
-      const key = `${e.transactionHash}-${e.logIndex}`;
-      if (seenTxs.has(key)) continue;
-      seenTxs.add(key);
+    let fromBlock = lastBlock + 1;
 
-      metrics.eventsProcessed++;
+    while (fromBlock <= currentBlock) {
+      const toBlock = Math.min(
+        fromBlock + MAX_BLOCK_RANGE,
+        currentBlock
+      );
 
-      if (e.eventName === "Scheduled") {
-        const [id, sender, , amount, executeAfter] = e.args;
-        const senderAddr = sender.toLowerCase();
+      const events = await contract.queryFilter(
+        "*",
+        fromBlock,
+        toBlock
+      );
 
-        payments[id.toString()] = senderAddr;
-        saveJSON(PAYMENTS_FILE, payments);
+      for (const e of events) {
+        const key = `${e.transactionHash}-${e.logIndex}`;
+        if (seenTxs.has(key)) continue;
+        seenTxs.add(key);
 
-        const user = users[senderAddr];
-        if (!user) continue;
+        metrics.eventsProcessed++;
 
-        await sendTelegramTo(
-          user.chatId,
-          `📅 Payment Scheduled
+        /* ===== Scheduled ===== */
+        if (e.eventName === "Scheduled") {
+          const [id, sender, , amount, executeAfter] = e.args;
+          const senderAddr = sender.toLowerCase();
+
+          payments[id.toString()] = senderAddr;
+          saveJSON(PAYMENTS_FILE, payments);
+
+          const user = users[senderAddr];
+          if (!user) continue;
+
+          await sendTelegramTo(
+            user.chatId,
+            `📅 Payment Scheduled
 ID: ${id}
 Amount: ${ethers.formatUnits(amount, 6)} USDC
 Executes: ${new Date(Number(executeAfter) * 1000).toUTCString()}`
-        );
-      }
+          );
+        }
 
-      if (e.eventName === "Executed") {
-        const [id, feePaid] = e.args;
-        const senderAddr = payments[id.toString()];
-        if (!senderAddr) continue;
+        /* ===== Executed ===== */
+        if (e.eventName === "Executed") {
+          const [id, feePaid] = e.args;
+          const senderAddr = payments[id.toString()];
+          if (!senderAddr) continue;
 
-        const user = users[senderAddr];
-        if (!user) continue;
+          const user = users[senderAddr];
+          if (!user) continue;
 
-        await sendTelegramTo(
-          user.chatId,
-          `✅ Payment Executed
+          await sendTelegramTo(
+            user.chatId,
+            `✅ Payment Executed
 ID: ${id}
 Fee: ${ethers.formatUnits(feePaid, 6)} USDC`
-        );
+          );
 
-        delete payments[id.toString()];
-        saveJSON(PAYMENTS_FILE, payments);
-      }
+          delete payments[id.toString()];
+          saveJSON(PAYMENTS_FILE, payments);
+        }
 
-      if (e.eventName === "Cancelled") {
-        const [id] = e.args;
-        const senderAddr = payments[id.toString()];
-        if (!senderAddr) continue;
+        /* ===== Cancelled ===== */
+        if (e.eventName === "Cancelled") {
+          const [id] = e.args;
+          const senderAddr = payments[id.toString()];
+          if (!senderAddr) continue;
 
-        const user = users[senderAddr];
-        if (!user) continue;
+          const user = users[senderAddr];
+          if (!user) continue;
 
-        await sendTelegramTo(
-          user.chatId,
-          `❌ Payment Cancelled
+          await sendTelegramTo(
+            user.chatId,
+            `❌ Payment Cancelled
 ID: ${id}`
-        );
+          );
 
-        delete payments[id.toString()];
-        saveJSON(PAYMENTS_FILE, payments);
+          delete payments[id.toString()];
+          saveJSON(PAYMENTS_FILE, payments);
+        }
       }
+
+      fromBlock = toBlock + 1;
     }
 
     lastBlock = currentBlock;
@@ -179,6 +199,7 @@ const server = http.createServer(async (req, res) => {
   req.on("end", () => {
     try {
       const { wallet, chatId, signature } = JSON.parse(body);
+
       const message = `Link Telegram alerts
 Wallet: ${wallet}
 Chat ID: ${chatId}`;
@@ -202,7 +223,7 @@ Chat ID: ${chatId}`;
       res.writeHead(200);
       res.end("Telegram alerts enabled");
 
-    } catch (e) {
+    } catch {
       metrics.errors++;
       res.writeHead(400);
       res.end("Bad request");
