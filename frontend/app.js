@@ -441,12 +441,29 @@ async function checkExecutorHealth() {
 setInterval(checkExecutorHealth, 10000);
 checkExecutorHealth();
 
+const BOT_USERNAME = "arc_scheduler_bot"; 
+
+function enableTelegramAlerts() {
+  if (!userAddress) {
+    alert("Please connect your wallet first");
+    return;
+  }
+
+  const url = `https://t.me/${BOT_USERNAME}?start=${userAddress}`;
+  window.open(url, "_blank");
+
+  alert("Telegram opened.\n\nClick START in Telegram to enable alerts.");
+}
+
+
 // ================= EXPOSE =================
 window.connectWallet = connectWallet;
 window.sendNow = sendNow;
 window.schedulePayment = schedulePayment;
 window.manualExecute = manualExecute;
 window.cancelPayment = cancelPayment;
+window.enableTelegramAlerts = enableTelegramAlerts;
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const manualBtn = document.getElementById("manualExecBtn");

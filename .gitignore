@@ -20,3 +20,7 @@ yarn.lock
 
 # OS
 .DS_Store
+
+state.json
+users.json
+payments.json

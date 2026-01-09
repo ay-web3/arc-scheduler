@@ -42,11 +42,17 @@
       </div>
 
       <div id="walletMenu" class="wallet-menu hidden">
-        <button onclick="copyWalletAddress(event)">📋 Copy address</button>
-        <button onclick="openExplorer()">🔍 View on Explorer</button>
-        <div class="divider"></div>
-        <button class="danger" onclick="disconnectWallet()">🔌 Disconnect</button>
-      </div>
+  <button onclick="copyWalletAddress(event)">📋 Copy address</button>
+  <button onclick="openExplorer()">🔍 View on Explorer</button>
+
+  <button onclick="enableTelegramAlerts()">
+    🔔 Enable Telegram Alerts
+  </button>
+
+  <div class="divider"></div>
+  <button class="danger" onclick="disconnectWallet()">🔌 Disconnect</button>
+</div>
+
     </div>
   </div>
 </header>
