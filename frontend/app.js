@@ -1,4 +1,6 @@
+let connectBtn, walletPill, walletAddressEl, statFee;
 let isRenderingHistory = false;
+
 
 const erc20Abi = [
   "function allowance(address owner, address spender) view returns (uint256)",
@@ -110,8 +112,6 @@ connectBtn.classList.add("hidden");
 
   loadPaymentHistory();
 }
-
-connectBtn.innerText = "Connect Wallet";
 
 
 async function ensureAllowance(amount) {
@@ -518,7 +518,13 @@ function humanizeError(err) {
   return "Transaction failed. Please try again.";
 }
 
-const connectBtn = document.getElementById("connectBtn");
-const walletPill = document.getElementById("walletPill");
-const walletAddressEl = document.getElementById("walletAddress");
-const statFee = document.getElementById("statFee");
+document.addEventListener("DOMContentLoaded", () => {
+  connectBtn = document.getElementById("connectBtn");
+  walletPill = document.getElementById("walletPill");
+  walletAddressEl = document.getElementById("walletAddress");
+  statFee = document.getElementById("statFee");
+
+  connectBtn.addEventListener("click", connectWallet);
+
+  console.log("✅ Wallet button ready");
+});
