@@ -658,3 +658,19 @@ section {
   padding-left: 6%;
   padding-right: 6%;
 }
+
+.btn-glow {
+  position: relative;
+}
+
+.btn-glow::after {
+  content: "›";
+  margin-left: 6px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.btn-glow:hover::after {
+  transform: translateX(4px);
+}
+
