@@ -485,9 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
       manualExecute();
     });
   }
-  document.addEventListener("DOMContentLoaded", () => {
-  connectBtn.addEventListener("click", connectWallet);
-});
+  
 
 });
 
