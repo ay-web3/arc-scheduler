@@ -1,23 +1,28 @@
 import "dotenv/config";
-import fs from "fs";
-import http from "http";
-import { ethers, verifyMessage } from "ethers";
 import fetch from "node-fetch";
+import fs from "fs";
+import { ethers } from "ethers";
 import { ABI } from "./abi.js";
 
-/* ================= FILES ================= */
+/* ================= CONFIG ================= */
 
 const USERS_FILE = "./users.json";
 const PAYMENTS_FILE = "./payments.json";
 const STATE_FILE = "./state.json";
+const TG_OFFSET_FILE = "./tg-offset.json";
 
-/* ================= CONFIG ================= */
+const MAX_BLOCK_RANGE = 2000;
+const TG_POLL_INTERVAL = 3000;
+const CHAIN_POLL_INTERVAL = 10_000;
+const COUNTDOWN_INTERVAL = 60_000;
 
-const MAX_BLOCK_RANGE = 2000; // IMPORTANT: prevents RPC log-limit errors
+const ARCSCAN_TX = "https://testnet.arcscan.app/tx/";
+const ARCSCAN_ADDR = "https://testnet.arcscan.app/address/";
+
 
 /* ================= HELPERS ================= */
 
-function loadJSON(path, fallback = {}) {
+function loadJSON(path, fallback) {
   if (!fs.existsSync(path)) return fallback;
   const raw = fs.readFileSync(path, "utf8");
   if (!raw.trim()) return fallback;
@@ -30,17 +35,19 @@ function saveJSON(path, data) {
 
 /* ================= STATE ================= */
 
+let users = loadJSON(USERS_FILE, {});
+let payments = loadJSON(PAYMENTS_FILE, {});
 let state = loadJSON(STATE_FILE, { lastBlock: 0 });
+let tgOffset = loadJSON(TG_OFFSET_FILE, { offset: 0 }).offset;
 
 /* ================= METRICS ================= */
 
 const metrics = {
   startTime: Date.now(),
+  telegramLinks: 0,
   eventsProcessed: 0,
   notificationsSent: 0,
-  errors: 0,
-  lastBlockSeen: 0,
-  usersRegistered: 0
+  errors: 0
 };
 
 /* ================= PROVIDER ================= */
@@ -52,120 +59,345 @@ const contract = new ethers.Contract(
   provider
 );
 
-/* ================= TELEGRAM ================= */
+/* ================= TELEGRAM SEND ================= */
 
-async function sendTelegramTo(chatId, message) {
-  const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`;
+async function sendTelegram(chatId, text) {
+  try {
+    await fetch(
+      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text,
+          parse_mode: "Markdown"
+        })
+      }
+    );
 
-  await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: message
-    })
-  });
+    metrics.notificationsSent++;
+  } catch (err) {
+    metrics.errors++;
+    console.error("Telegram send failed:", err.message);
+  }
+}
+
+async function notifyPair({
+  sender,
+  receiver,
+  senderMessage,
+  receiverMessage
+}) {
+  const senderUser = users[sender];
+  const receiverUser = users[receiver];
+
+  // same wallet + same chat = one notification only
+  const sameChat =
+    sender === receiver &&
+    senderUser &&
+    receiverUser &&
+    senderUser.chatId === receiverUser.chatId;
+
+  if (senderUser && senderMessage) {
+    await sendTelegram(senderUser.chatId, senderMessage);
+  }
+
+  if (!sameChat && receiverUser && receiverMessage) {
+    await sendTelegram(receiverUser.chatId, receiverMessage);
+  }
+
+  if (!senderUser && !receiverUser) return;
+
+}
+
+
+async function sendTelegramWithButtons(chatId, text, buttons) {
+  await fetch(
+    `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: buttons
+        }
+      })
+    }
+  );
 
   metrics.notificationsSent++;
 }
 
-/* ================= INIT ================= */
+/* ================= TELEGRAM POLLING ================= */
 
-if (state.lastBlock === 0) {
-  state.lastBlock = await provider.getBlockNumber();
-  saveJSON(STATE_FILE, state);
-}
-
-let lastBlock = state.lastBlock;
-const seenTxs = new Set();
-
-/* ================= POLLING ================= */
-
-async function pollEvents() {
+async function pollTelegram() {
   try {
-    const currentBlock = await provider.getBlockNumber();
-    metrics.lastBlockSeen = currentBlock;
+    const res = await fetch(
+      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getUpdates?offset=${tgOffset}`
+    );
 
-    if (currentBlock <= lastBlock) return;
+    const data = await res.json();
+    if (!data.ok) return;
 
-    const users = loadJSON(USERS_FILE);
-    const payments = loadJSON(PAYMENTS_FILE);
+    for (const update of data.result) {
+      tgOffset = update.update_id + 1;
+      saveJSON(TG_OFFSET_FILE, { offset: tgOffset });
 
-    let fromBlock = lastBlock + 1;
+      /* ===== BUTTON CLICKS ===== */
+      if (update.callback_query) {
+        const query = update.callback_query;
+        const chatId = query.message.chat.id.toString();
+        const action = query.data;
 
-    while (fromBlock <= currentBlock) {
-      const toBlock = Math.min(
-        fromBlock + MAX_BLOCK_RANGE,
-        currentBlock
-      );
+        // acknowledge click
+        await fetch(
+          `https://api.telegram.org/bot${process.env.BOT_TOKEN}/answerCallbackQuery`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ callback_query_id: query.id })
+          }
+        );
 
-      const events = await contract.queryFilter(
-        "*",
-        fromBlock,
-        toBlock
-      );
+        if (action === "STATUS") {
+          const linkedWallets = Object.keys(users).filter(
+            w => users[w].chatId === chatId
+          );
 
-      for (const e of events) {
-        const key = `${e.transactionHash}-${e.logIndex}`;
-        if (seenTxs.has(key)) continue;
-        seenTxs.add(key);
+          if (linkedWallets.length === 0) {
+            await sendTelegram(chatId, "❌ You are not subscribed.");
+          } else {
+            await sendTelegram(
+              chatId,
+              `📊 Status\n\nLinked wallet(s):\n${linkedWallets.join("\n")}`
+            );
+          }
+        }
 
-        metrics.eventsProcessed++;
+        if (action === "STOP") {
+          let removed = false;
 
-        /* ===== Scheduled ===== */
-        if (e.eventName === "Scheduled") {
-          const [id, sender, , amount, executeAfter] = e.args;
-          const senderAddr = sender.toLowerCase();
+          for (const wallet of Object.keys(users)) {
+            if (users[wallet].chatId === chatId) {
+              delete users[wallet];
+              removed = true;
+            }
+          }
 
-          payments[id.toString()] = senderAddr;
-          saveJSON(PAYMENTS_FILE, payments);
+          saveJSON(USERS_FILE, users);
 
-          const user = users[senderAddr];
-          if (!user) continue;
-
-          await sendTelegramTo(
-            user.chatId,
-            `📅 Payment Scheduled
-ID: ${id}
-Amount: ${ethers.formatUnits(amount, 6)} USDC
-Executes: ${new Date(Number(executeAfter) * 1000).toUTCString()}`
+          await sendTelegram(
+            chatId,
+            removed
+              ? "❌ You have unsubscribed from alerts."
+              : "ℹ️ You were not subscribed."
           );
         }
 
-        /* ===== Executed ===== */
-        if (e.eventName === "Executed") {
-          const [id, feePaid] = e.args;
-          const senderAddr = payments[id.toString()];
-          if (!senderAddr) continue;
+        continue;
+      }
 
-          const user = users[senderAddr];
-          if (!user) continue;
+      /* ===== NORMAL MESSAGES ===== */
+      const msg = update.message;
+      if (!msg || !msg.text) continue;
 
-          await sendTelegramTo(
-            user.chatId,
-            `✅ Payment Executed
-ID: ${id}
-Fee: ${ethers.formatUnits(feePaid, 6)} USDC`
+      const text = msg.text.trim();
+      const chatId = msg.chat.id.toString();
+
+      /* ===== /start <wallet> ===== */
+      if (text.startsWith("/start")) {
+        const wallet = text.split(" ")[1]?.toLowerCase();
+        if (!wallet) continue;
+
+        users[wallet] = {
+          chatId,
+          linkedAt: Date.now()
+        };
+
+        saveJSON(USERS_FILE, users);
+        metrics.telegramLinks++;
+
+        await sendTelegramWithButtons(
+          chatId,
+          "✅ Telegram alerts enabled!\n\nChoose an option:",
+          [
+            [{ text: "📊 Status", callback_data: "STATUS" }],
+            [{ text: "❌ Unsubscribe", callback_data: "STOP" }]
+          ]
+        );
+
+        console.log("🔗 Telegram linked:", wallet);
+      }
+
+      /* ===== /status ===== */
+      if (text === "/status") {
+        const linkedWallets = Object.keys(users).filter(
+          w => users[w].chatId === chatId
+        );
+
+        if (linkedWallets.length === 0) {
+          await sendTelegram(chatId, "❌ You are not subscribed.");
+        } else {
+          await sendTelegram(
+            chatId,
+            `📊 Status\n\nLinked wallet(s):\n${linkedWallets.join("\n")}`
           );
+        }
+      }
+
+      /* ===== /stop ===== */
+      if (text === "/stop") {
+        let removed = false;
+
+        for (const wallet of Object.keys(users)) {
+          if (users[wallet].chatId === chatId) {
+            delete users[wallet];
+            removed = true;
+          }
+        }
+
+        saveJSON(USERS_FILE, users);
+
+        await sendTelegram(
+          chatId,
+          removed
+            ? "❌ You have unsubscribed from alerts."
+            : "ℹ️ You were not subscribed."
+        );
+      }
+    }
+  } catch (err) {
+    metrics.errors++;
+    console.error("Telegram polling error:", err.message);
+  }
+}
+
+/* ================= CONTRACT POLLING ================= */
+
+async function pollContract() {
+  try {
+    const currentBlock = await provider.getBlockNumber();
+
+    if (state.lastBlock === 0) {
+      state.lastBlock = currentBlock;
+      saveJSON(STATE_FILE, state);
+      return;
+    }
+
+    let fromBlock = state.lastBlock + 1;
+
+    while (fromBlock <= currentBlock) {
+      const toBlock = Math.min(fromBlock + MAX_BLOCK_RANGE, currentBlock);
+
+      const events = await contract.queryFilter("*", fromBlock, toBlock);
+
+      for (const e of events) {
+        metrics.eventsProcessed++;
+
+        if (e.eventName === "Scheduled") {
+          const [id, sender, receiver, amount, executeAfter] = e.args;
+          const senderAddr = sender.toLowerCase();
+
+          payments[id.toString()] = {
+            sender: sender.toLowerCase(),
+            receiver: receiver.toLowerCase(),
+            executeAt: Number(executeAfter),
+            reminded1h: false,
+            reminded10m: false
+          };
+
+saveJSON(PAYMENTS_FILE, payments);
+
+
+          await notifyPair({
+  sender: senderAddr,
+  receiver: receiver.toLowerCase(),
+
+  senderMessage: `📅 *Payment Scheduled*
+
+🆔 ID: \`${id}\`
+💰 Amount: ${ethers.formatUnits(amount, 6)} USDC
+⏰ Executes: ${new Date(Number(executeAfter) * 1000).toUTCString()}
+
+🔗 [View Wallet](${ARCSCAN_ADDR}${senderAddr})`,
+
+  receiverMessage: `📥 *Incoming Payment Scheduled*
+
+From: ${senderAddr}
+💰 Amount: ${ethers.formatUnits(amount, 6)} USDC
+⏰ Executes: ${new Date(Number(executeAfter) * 1000).toUTCString()}`
+});
+
+
+
+        }
+
+        if (e.eventName === "Executed") {
+  const [id, feePaid] = e.args;
+  const entry = payments[id.toString()];
+if (!entry) continue;
+
+const senderAddr = entry.sender;
+const receiverAddr = entry.receiver;
+
+  await notifyPair({
+  sender: senderAddr,
+  receiver: receiverAddr,
+
+  senderMessage: `✅ *Payment Executed*
+
+🆔 ID: \`${id}\`
+💸 Fee: ${ethers.formatUnits(feePaid, 6)} USDC
+
+🔗 [View Transaction](${ARCSCAN_TX}${e.transactionHash})`,
+
+  receiverMessage: `💰 *Payment Received*
+
+From: ${senderAddr}
+🆔 ID: \`${id}\`
+
+🔗 [View Transaction](${ARCSCAN_TX}${e.transactionHash})`
+});
+
+
 
           delete payments[id.toString()];
           saveJSON(PAYMENTS_FILE, payments);
         }
 
-        /* ===== Cancelled ===== */
         if (e.eventName === "Cancelled") {
           const [id] = e.args;
-          const senderAddr = payments[id.toString()];
+          const entry = payments[id.toString()];
+if (!entry) continue;
+
+const senderAddr = entry.sender;
+const receiverAddr = entry.receiver;
+
+
           if (!senderAddr) continue;
 
-          const user = users[senderAddr];
-          if (!user) continue;
+          await notifyPair({
+  sender: senderAddr,
+  receiver: receiverAddr,
 
-          await sendTelegramTo(
-            user.chatId,
-            `❌ Payment Cancelled
-ID: ${id}`
-          );
+  senderMessage: `❌ *Payment Cancelled*
+
+🆔 ID: \`${id}\`
+🔗 [View Transaction](${ARCSCAN_TX}${e.transactionHash})`,
+
+  receiverMessage: `❌ *Incoming Payment Cancelled*
+
+From: ${senderAddr}
+🆔 ID: \`${id}\`
+
+🔗 [View Transaction](${ARCSCAN_TX}${e.transactionHash})`
+});
+
+
 
           delete payments[id.toString()];
           saveJSON(PAYMENTS_FILE, payments);
@@ -175,74 +407,84 @@ ID: ${id}`
       fromBlock = toBlock + 1;
     }
 
-    lastBlock = currentBlock;
     state.lastBlock = currentBlock;
     saveJSON(STATE_FILE, state);
-
   } catch (err) {
     metrics.errors++;
-    console.error("Polling error:", err.message);
-    await new Promise(r => setTimeout(r, 30_000));
+    console.error("Contract polling error:", err.message);
   }
 }
 
-/* ================= OPT-IN SERVER ================= */
+async function checkCountdowns() {
+  const now = Math.floor(Date.now() / 1000);
 
-const server = http.createServer(async (req, res) => {
-  if (req.method !== "POST" || req.url !== "/opt-in") {
-    res.writeHead(404);
-    return res.end();
-  }
+  for (const [id, p] of Object.entries(payments)) {
+    const { sender, receiver, executeAt } = p;
 
-  let body = "";
-  req.on("data", chunk => body += chunk);
-  req.on("end", () => {
-    try {
-      const { wallet, chatId, signature } = JSON.parse(body);
+    const senderUser = users[sender];
+    const receiverUser = users[receiver];
 
-      const message = `Link Telegram alerts
-Wallet: ${wallet}
-Chat ID: ${chatId}`;
+    const diff = executeAt - now;
 
-      const recovered = verifyMessage(message, signature);
+    // ⏰ 1 hour reminder
+    if (diff <= 3600 && diff > 3540 && !p.reminded1h) {
+      await notifyPair({
+  sender,
+  receiver,
 
-      if (recovered.toLowerCase() !== wallet.toLowerCase()) {
-        res.writeHead(401);
-        return res.end("Invalid signature");
-      }
+  senderMessage: `⏳ *Reminder*
 
-      const users = loadJSON(USERS_FILE);
-      users[wallet.toLowerCase()] = {
-        chatId,
-        linkedAt: Date.now()
-      };
-      saveJSON(USERS_FILE, users);
+Payment #${id} will execute in **1 hour**
 
-      metrics.usersRegistered++;
+🔗 [View Wallet](${ARCSCAN_ADDR}${sender})`,
 
-      res.writeHead(200);
-      res.end("Telegram alerts enabled");
+  receiverMessage: `📥 *Incoming Payment Reminder*
 
-    } catch {
-      metrics.errors++;
-      res.writeHead(400);
-      res.end("Bad request");
-    }
-  });
+Payment #${id} will arrive in **1 hour**
+
+🔗 [View Wallet](${ARCSCAN_ADDR}${receiver})`
 });
 
-server.listen(process.env.PORT || 3000);
+p.reminded1h = true;
 
-/* ================= METRICS LOG ================= */
+    }
+
+    // ⏰ 10 minute reminder
+    if (diff <= 600 && diff > 540 && !p.reminded10m) {
+      await notifyPair({
+  sender,
+  receiver,
+
+  senderMessage: `⚠️ *Reminder*
+
+Payment #${id} executes in **10 minutes**`,
+
+  receiverMessage: `💰 *Incoming Payment*
+
+Payment #${id} arriving in **10 minutes**`
+});
+
+p.reminded10m = true;
+
+    }
+  }
+
+  saveJSON(PAYMENTS_FILE, payments);
+}
+
+
+/* ================= START ================= */
+
+setInterval(pollTelegram, TG_POLL_INTERVAL);
+setInterval(pollContract, CHAIN_POLL_INTERVAL);
+setInterval(checkCountdowns, COUNTDOWN_INTERVAL);
 
 setInterval(() => {
+  
   console.log("📊 METRICS", {
     uptimeMin: Math.floor((Date.now() - metrics.startTime) / 60000),
     ...metrics
   });
 }, 60_000);
 
-/* ================= START ================= */
-
-setInterval(pollEvents, 10_000);
-console.log("🚀 Notifier running with wallet-signed opt-in");
+console.log("🤖 Telegram + Contract notifier running");

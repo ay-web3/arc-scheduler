@@ -24,3 +24,4 @@ yarn.lock
 state.json
 users.json
 payments.json
+tg-offset.json
