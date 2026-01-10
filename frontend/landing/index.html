@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Arc Scheduler</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">
+    <img src="/favicon-32x32.png" alt="Arc Scheduler" class="logo-icon">
+    Arc Scheduler
+  </div>
+    <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it Works</a>
+    <a href="#security">Security</a>
+    <a href="#faq">FAQ</a>
+    <a href="/frontend/app/index.html" class="btn-glow">Launch App</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>Agentic Commerce for USDC Payments</h1>
+    <p>
+      A decentralized USDC payment scheduler on Arc Testnet.
+      Schedule once. Funds locked on-chain. Executed automatically by bots.
+    </p>
+    <a href="/frontend/app/index.html" class="btn-glow">Launch App</a>
+  </div>
+
+  <div class="hero-visual">
+    <div class="agent-orb">🤖</div>
+    <p class="visual-note">Autonomous Execution Agent</p>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<section class="trust-bar">
+  <span>Supported Chain:</span>
+  <div class="chains">
+    <div>Arc Testnet</div>
+    
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <h2 class="section-title">Core Features</h2>
+
+  <div class="features-grid">
+    <div class="glass-card">
+      <h3>Send & Schedule USDC</h3>
+      <p>Instant transfers or future-dated payments using USDC.</p>
+    </div>
+
+    <div class="glass-card">
+      <h3>On-Chain Escrow</h3>
+      <p>Funds are locked in the smart contract until execution.</p>
+    </div>
+
+    <div class="glass-card">
+      <h3>Cancelable Payments</h3>
+      <p>Cancel anytime before execution and receive a refund.</p>
+    </div>
+
+    <div class="glass-card">
+      <h3>Auto Executor Bot</h3>
+      <p>Autonomous bot executes payments when due.</p>
+    </div>
+
+    <div class="glass-card">
+      <h3>Manual Execution Fallback</h3>
+      <p>Sender or recipient can execute if the bot fails.</p>
+    </div>
+
+    <div class="glass-card">
+      <h3>Incoming & Outgoing Views</h3>
+      <p>Track scheduled payments from both perspectives.</p>
+    </div>
+
+    <div class="glass-card">
+      <h3>Telegram Notifications</h3>
+      <p>Alerts for execution, failures, and pending payments.</p>
+    </div>
+
+    <div class="glass-card">
+      <h3>Executor Fee (BPS)</h3>
+      <p>Sustainable automation via basis-point execution fee.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <h2 class="section-title">How It Works</h2>
+
+  <div class="how-grid">
+    <div class="step-card">
+      <span>1</span>
+      <h3>Connect & Configure</h3>
+      <p>Connect wallet, choose USDC amount and execution time.</p>
+    </div>
+
+    <div class="step-card">
+      <span>2</span>
+      <h3>Authorize</h3>
+      <p>Approve USDC allowance and schedule payment on-chain.</p>
+    </div>
+
+    <div class="step-card">
+      <span>3</span>
+      <h3>Relax</h3>
+      <p>Bot or recipient executes automatically when due.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<section class="dashboard">
+  <h2 class="section-title">Dashboard Preview</h2>
+
+  <div class="dashboard-mock">
+    <p>Incoming | Outgoing Transactions</p>
+    <div class="table-row">Incoming → 15 USDC → Scheduled</div>
+    <div class="table-row">Outgoing → 5 USDC → Executed</div>
+    <div class="table-row">Outgoing → 20 USDC → Canceled</div>
+  </div>
+</section>
+
+<!-- WHY ARC -->
+<section id="why-arc">
+  <h2 class="section-title">Why Arc?</h2>
+
+  <div class="why-grid">
+    <div class="why-card">
+      <h3>Stablecoin-Native</h3>
+      <p>Arc is built specifically for USDC-based financial workflows — not retrofitted for them.</p>
+    </div>
+
+    <div class="why-card">
+      <h3>USDC as Gas</h3>
+      <p>No volatile gas tokens. Fees are paid directly in USDC for predictable costs.</p>
+    </div>
+
+    <div class="why-card">
+      <h3>Deterministic Finality</h3>
+      <p>Transactions settle with certainty — ideal for payroll, subscriptions, and automation.</p>
+    </div>
+
+    <div class="why-card">
+      <h3>Payments-First Design</h3>
+      <p>Optimized for real-world finance, not speculative DeFi complexity.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- SECURITY -->
+<section id="security">
+  <h2 class="section-title">Security First</h2>
+
+  <div class="security-grid">
+    <div class="security-card">
+      <h3>Non-Custodial by Design</h3>
+      <p>Your funds remain under smart contract control — never on our servers.</p>
+    </div>
+
+    <div class="security-card">
+      <h3>On-Chain Escrow</h3>
+      <p>Scheduled payments are locked transparently until execution or cancellation.</p>
+    </div>
+
+    <div class="security-card">
+      <h3>Open-Source Contracts</h3>
+      <p>Every line of contract logic is auditable and verifiable.</p>
+    </div>
+
+    <div class="security-card">
+      <h3>Deterministic Execution</h3>
+      <p>No black-box automation. Execution logic is predictable and verifiable.</p>
+    </div>
+
+    <div class="security-card">
+      <h3>No Private Key Storage</h3>
+      <p>Wallet signatures only. Zero custody. Zero compromise.</p>
+    </div>
+  </div>
+</section>
+
+<section id="comparison">
+  <h2 class="section-title">Arc Scheduler vs Automation Networks</h2>
+
+  <div class="compare-table">
+
+    <div class="compare-head">
+      <div>Feature</div>
+      <div class="arc">Arc Scheduler</div>
+      <div>Chainlink / Gelato</div>
+    </div>
+
+    <div class="compare-row">
+      <div>Stablecoin-native design</div>
+      <div class="yes">✔</div>
+      <div class="no">✖</div>
+    </div>
+
+    <div class="compare-row">
+      <div>USDC used as gas</div>
+      <div class="yes">✔</div>
+      <div class="no">✖</div>
+    </div>
+
+    <div class="compare-row">
+      <div>On-chain escrow payments</div>
+      <div class="yes">✔</div>
+      <div class="no">✖</div>
+    </div>
+
+    <div class="compare-row">
+      <div>Cancelable scheduled transfers</div>
+      <div class="yes">✔</div>
+      <div class="no">✖</div>
+    </div>
+
+    <div class="compare-row">
+      <div>Recipient can execute payment</div>
+      <div class="yes">✔</div>
+      <div class="no">✖</div>
+    </div>
+
+    <div class="compare-row">
+      <div>Incoming / Outgoing UI views</div>
+      <div class="yes">✔</div>
+      <div class="no">✖</div>
+    </div>
+
+    <div class="compare-row">
+      <div>Lightweight & open-source</div>
+      <div class="yes">✔</div>
+      <div class="no">✖</div>
+    </div>
+
+    <div class="compare-row highlight">
+      <div>Purpose-built for USDC payments</div>
+      <div class="yes">✔</div>
+      <div class="no">✖</div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- FAQ -->
+<section id="faq" class="faq-neural">
+  <h2 class="section-title">Frequently Asked Questions</h2>
+
+  <div class="neural-console">
+
+    <div class="neural-item">
+  <div class="neural-question">How does Arc Scheduler work?</div>
+  <div class="neural-answer">Arc Scheduler allows you to schedule USDC payments on Arc Testnet by selecting a recipient, amount, and execution time. The smart contract and automated executor handle the rest.</div>
+</div>
+
+    <div class="neural-item">
+      <div class="neural-question">Where are funds stored?</div>
+      <div class="neural-answer">Funds are locked inside an on-chain escrow smart contract until execution or cancellation.</div>
+    </div>
+
+    <div class="neural-item">
+      <div class="neural-question">Who can execute payments?</div>
+      <div class="neural-answer">The autonomous bot, the sender, or the recipient can trigger execution.</div>
+    </div>
+
+    <div class="neural-item">
+      <div class="neural-question">Can I cancel scheduled payments?</div>
+      <div class="neural-answer">Yes. Any scheduled payment can be canceled before execution and refunded automatically.</div>
+    </div>
+
+
+<div class="neural-item">
+  <div class="neural-question">Is my money safe?</div>
+  <div class="neural-answer">Yes. Your funds are secured in the smart contract and can only be executed as scheduled or refunded if you cancel the payment.</div>
+</div>
+
+<div class="neural-item">
+  <div class="neural-question">Do I need to stay online for payments to execute?</div>
+  <div class="neural-answer">No. The automated executor will execute your payments at the scheduled time even if you are offline.</div>
+</div>
+
+<div class="neural-item">
+  <div class="neural-question">How do Telegram notifications work?</div>
+  <div class="neural-answer">After connecting your wallet, click “Enable Telegram Alerts” and press Start in the bot. You will receive notifications when payments are scheduled and executed or cancelled.</div>
+</div>
+   
+  </div>
+</section>
+
+
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Powered by Arc Testnet</span>
+    <span>•</span>
+
+    <a
+      href="https://testnet.arcscan.app/address/0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6"
+      target="_blank"
+    >
+      Contract
+    </a>
+
+    <span>•</span>
+    <span>Auto Executor Enabled</span>
+
+    <span>•</span>
+    <span>© 2026 Arc Scheduler. All rights fully reserved.</span>
+
+    <span>•</span>
+    <span>Testnet • Beta</span>
+
+    <span>•</span>
+
+    <a
+      href="https://github.com/ay-web3/arc-usdc-scheduler"
+      target="_blank"
+      class="github-link"
+    >
+      GitHub
+    </a>
+
+    <span>•</span>
+    <span class="muted">Built by ay-web3</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
