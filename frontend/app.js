@@ -5,7 +5,6 @@ const erc20Abi = [
   "function approve(address spender, uint256 amount) returns (bool)"
 ];
 
-import EthereumProvider from "https://unpkg.com/@walletconnect/ethereum-provider@2.11.0/dist/index.es.js";
 
 
 const CONTRACT_ADDRESS = "0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6";
@@ -21,6 +20,8 @@ const connectBtn = document.getElementById("connectBtn");
 const walletPill = document.getElementById("walletPill");
 const walletAddressEl = document.getElementById("walletAddress");
 const statFee = document.getElementById("statFee");
+
+const EthereumProvider = window.WalletConnectEthereumProvider;
 
 
 const abi = [
