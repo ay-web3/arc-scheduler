@@ -485,7 +485,13 @@ document.addEventListener("DOMContentLoaded", () => {
       manualExecute();
     });
   }
+  document.addEventListener("DOMContentLoaded", () => {
+  connectBtn.addEventListener("click", connectWallet);
 });
+
+});
+
+
 
 function humanizeError(err) {
   if (!err) return "Something went wrong";
