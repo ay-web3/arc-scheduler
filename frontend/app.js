@@ -5,6 +5,7 @@ const erc20Abi = [
   "function approve(address spender, uint256 amount) returns (bool)"
 ];
 
+import EthereumProvider from "@walletconnect/ethereum-provider";
 
 const CONTRACT_ADDRESS = "0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6";
 const CHAIN_ID = 5042002;
@@ -32,51 +33,57 @@ const abi = [
   "event Executed(uint256 indexed id)"
 ];
 
+
+async function getWalletProvider() {
+  // 1️⃣ Desktop or injected wallet
+  if (window.ethereum) {
+    return new ethers.BrowserProvider(window.ethereum);
+  }
+
+  // 2️⃣ WalletConnect fallback
+  const wcProvider = await EthereumProvider.init({
+    projectId: "80c8d3c2330d5eeb1684b3f3f7a1dff6",
+    chains: [5042002], // Arc Testnet
+    showQrModal: true,
+    rpcMap: {
+      5042002: "https://rpc.testnet.arc.network"
+    },
+    methods: [
+      "eth_sendTransaction",
+      "eth_sign",
+      "eth_signTransaction",
+      "personal_sign"
+    ],
+    events: ["accountsChanged", "chainChanged"]
+  });
+
+  await wcProvider.enable();
+
+  return new ethers.BrowserProvider(wcProvider);
+}
+
 // ================= WALLET =================
 async function connectWallet() {
-  provider = new ethers.BrowserProvider(window.ethereum);
+  provider = await getWalletProvider();
 
-  await provider.send("eth_requestAccounts", []);
+  await provider.send("eth_accounts", []);
   signer = await provider.getSigner();
 
 
   // 2. Robust Chain Check (Ethers v6 uses BigInt)
   const network = await provider.getNetwork();
-  const chainId = Number(network.chainId); // force Number
+const chainId = Number(network.chainId);
 
-  const ARC_CHAIN_ID = 5042002;
+if (chainId !== CHAIN_ID) {
+  try {
+    await provider.send("wallet_switchEthereumChain", [
+      { chainId: ethers.toBeHex(CHAIN_ID) }
+    ]);
+  } catch {
+    alert("Please switch to Arc Testnet in your wallet");
+    return;
+  }
 
-  if (chainId !== ARC_CHAIN_ID) {
-    try {
-      // Attempt network switch
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(ARC_CHAIN_ID) }],
-      });
-    } catch (switchError) {
-      // Chain not added to wallet
-      if (switchError.code === 4902) {
-        await window.ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainId: ethers.toBeHex(ARC_CHAIN_ID),
-              chainName: "Arc Testnet",
-              nativeCurrency: {
-                name: "USDC",
-                symbol: "USDC",
-                decimals: 18,
-              },
-              rpcUrls: ["https://rpc.testnet.arc.network"],
-              blockExplorerUrls: ["https://testnet.arcscan.app/"],
-            },
-          ],
-        });
-      } else {
-        alert("Failed to switch to Arc Testnet");
-        return;
-      }
-    }
   }
 
   
@@ -104,6 +111,9 @@ connectBtn.classList.add("hidden");
 
   loadPaymentHistory();
 }
+
+connectBtn.innerText = "Connect Wallet";
+
 
 async function ensureAllowance(amount) {
   const usdc = new ethers.Contract(USDC_ADDRESS, erc20Abi, signer);
