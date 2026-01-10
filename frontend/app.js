@@ -16,12 +16,9 @@ let provider, signer, scheduler, userAddress;
 let currentFilter = "all";
 let currentView = "outgoing";
 
-const connectBtn = document.getElementById("connectBtn");
-const walletPill = document.getElementById("walletPill");
-const walletAddressEl = document.getElementById("walletAddress");
-const statFee = document.getElementById("statFee");
 
-const EthereumProvider = window.WalletConnectEthereumProvider;
+const EthereumProvider = window.WalletConnectEthereumProvider?.default || window.WalletConnectEthereumProvider;
+
 
 
 const abi = [
@@ -520,3 +517,8 @@ function humanizeError(err) {
 
   return "Transaction failed. Please try again.";
 }
+
+const connectBtn = document.getElementById("connectBtn");
+const walletPill = document.getElementById("walletPill");
+const walletAddressEl = document.getElementById("walletAddress");
+const statFee = document.getElementById("statFee");
