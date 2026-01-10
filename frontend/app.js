@@ -1,12 +1,9 @@
-let connectBtn, walletPill, walletAddressEl, statFee;
 let isRenderingHistory = false;
-
 
 const erc20Abi = [
   "function allowance(address owner, address spender) view returns (uint256)",
   "function approve(address spender, uint256 amount) returns (bool)"
 ];
-
 
 
 const CONTRACT_ADDRESS = "0x29CB84e6941314c20D659ECDBb7197e1A2B6fdd6";
@@ -18,9 +15,10 @@ let provider, signer, scheduler, userAddress;
 let currentFilter = "all";
 let currentView = "outgoing";
 
-
-const EthereumProvider = window.WalletConnectEthereumProvider?.default || window.WalletConnectEthereumProvider;
-
+const connectBtn = document.getElementById("connectBtn");
+const walletPill = document.getElementById("walletPill");
+const walletAddressEl = document.getElementById("walletAddress");
+const statFee = document.getElementById("statFee");
 
 
 const abi = [
@@ -34,57 +32,51 @@ const abi = [
   "event Executed(uint256 indexed id)"
 ];
 
-
-async function getWalletProvider() {
-  // 1️⃣ Desktop or injected wallet
-  if (window.ethereum) {
-    return new ethers.BrowserProvider(window.ethereum);
-  }
-
-  // 2️⃣ WalletConnect fallback
-  const wcProvider = await EthereumProvider.init({
-    projectId: "80c8d3c2330d5eeb1684b3f3f7a1dff6",
-    chains: [5042002], // Arc Testnet
-    showQrModal: true,
-    rpcMap: {
-      5042002: "https://rpc.testnet.arc.network"
-    },
-    methods: [
-      "eth_sendTransaction",
-      "eth_sign",
-      "eth_signTransaction",
-      "personal_sign"
-    ],
-    events: ["accountsChanged", "chainChanged"]
-  });
-
-  await wcProvider.enable();
-
-  return new ethers.BrowserProvider(wcProvider);
-}
-
 // ================= WALLET =================
 async function connectWallet() {
-  provider = await getWalletProvider();
+  provider = new ethers.BrowserProvider(window.ethereum);
 
-  await provider.send("eth_accounts", []);
+  await provider.send("eth_requestAccounts", []);
   signer = await provider.getSigner();
 
 
   // 2. Robust Chain Check (Ethers v6 uses BigInt)
   const network = await provider.getNetwork();
-const chainId = Number(network.chainId);
+  const chainId = Number(network.chainId); // force Number
 
-if (chainId !== CHAIN_ID) {
-  try {
-    await provider.send("wallet_switchEthereumChain", [
-      { chainId: ethers.toBeHex(CHAIN_ID) }
-    ]);
-  } catch {
-    alert("Please switch to Arc Testnet in your wallet");
-    return;
-  }
+  const ARC_CHAIN_ID = 5042002;
 
+  if (chainId !== ARC_CHAIN_ID) {
+    try {
+      // Attempt network switch
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: ethers.toBeHex(ARC_CHAIN_ID) }],
+      });
+    } catch (switchError) {
+      // Chain not added to wallet
+      if (switchError.code === 4902) {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: ethers.toBeHex(ARC_CHAIN_ID),
+              chainName: "Arc Testnet",
+              nativeCurrency: {
+                name: "USDC",
+                symbol: "USDC",
+                decimals: 18,
+              },
+              rpcUrls: ["https://rpc.testnet.arc.network"],
+              blockExplorerUrls: ["https://testnet.arcscan.app/"],
+            },
+          ],
+        });
+      } else {
+        alert("Failed to switch to Arc Testnet");
+        return;
+      }
+    }
   }
 
   
@@ -112,7 +104,6 @@ connectBtn.classList.add("hidden");
 
   loadPaymentHistory();
 }
-
 
 async function ensureAllowance(amount) {
   const usdc = new ethers.Contract(USDC_ADDRESS, erc20Abi, signer);
@@ -484,11 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
       manualExecute();
     });
   }
-  
-
 });
-
-
 
 function humanizeError(err) {
   if (!err) return "Something went wrong";
@@ -517,14 +504,3 @@ function humanizeError(err) {
 
   return "Transaction failed. Please try again.";
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  connectBtn = document.getElementById("connectBtn");
-  walletPill = document.getElementById("walletPill");
-  walletAddressEl = document.getElementById("walletAddress");
-  statFee = document.getElementById("statFee");
-
-  connectBtn.addEventListener("click", connectWallet);
-
-  console.log("✅ Wallet button ready");
-});
